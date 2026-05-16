@@ -1,0 +1,51 @@
+# Build artifacts
+/bin/
+/dist/
+/build/
+*.exe
+*.test
+*.out
+coverage.*
+*.cover
+profile.out
+
+# Go workspace + vendor
+/vendor/
+go.work
+go.work.sum
+
+# Local environment overrides
+.env
+.env.local
+.envrc
+
+# macOS
+.DS_Store
+
+# IDE / editor
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Claude Code per-user state
+.claude/settings.local.json
+.claude/.session/
+.claude/cache/
+
+# Tool output — these are user data, never committed
+/out/
+/osaat-out/
+/audit-*/
+
+# Secrets — never committed even if accidentally generated in-repo
+secrets.json
+*.age
+*.tar.age
+
+# Local goreleaser snapshot output
+.goreleaser/
+
+# Test fixtures with personally-identifying data
+/testdata/local/

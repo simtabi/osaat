@@ -1,0 +1,78 @@
+version: 2
+
+project_name: osaat
+
+before:
+  hooks:
+    - go mod tidy
+
+builds:
+  - id: osaat
+    main: ./cmd/osaat
+    binary: osaat
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - darwin
+      - linux
+    goarch:
+      - amd64
+      - arm64
+    ldflags:
+      - -s -w
+      - -X github.com/simtabi/osaat/internal/version.Version={{.Version}}
+      - -X github.com/simtabi/osaat/internal/version.Commit={{.Commit}}
+      - -X github.com/simtabi/osaat/internal/version.Date={{.Date}}
+
+archives:
+  - id: default
+    name_template: "osaat_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+    formats: [tar.gz]
+    files:
+      - LICENSE
+      - README.md
+      - CHANGELOG.md
+
+checksum:
+  name_template: "checksums.txt"
+  algorithm: sha256
+
+snapshot:
+  version_template: "{{ .Version }}-snapshot+{{ .ShortCommit }}"
+
+changelog:
+  use: github
+  sort: asc
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"
+      - "^ci:"
+      - "^chore:"
+      - Merge pull request
+      - Merge branch
+
+release:
+  draft: false
+  prerelease: auto
+  github:
+    owner: simtabi
+    name: osaat
+
+# Homebrew tap publishing is enabled in Phase 5 once the
+# simtabi/homebrew-tap repository exists and TAP_GITHUB_TOKEN is set
+# in this repo's Actions secrets. See docs/release.md.
+#
+# brews:
+#   - name: osaat
+#     repository:
+#       owner: simtabi
+#       name: homebrew-tap
+#       token: "{{ .Env.TAP_GITHUB_TOKEN }}"
+#     homepage: https://opensource.simtabi.com/products/osaat
+#     description: "Audit and back up installed applications on macOS, Linux, and Unix."
+#     license: MIT
+#     install: |
+#       bin.install "osaat"
+#     test: |
+#       system "#{bin}/osaat", "version"

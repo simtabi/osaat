@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Security disclosure
+    url: mailto:opensource@simtabi.com
+    about: Report a security vulnerability — please do not use the public issue tracker.
+  - name: Community discussion
+    url: https://github.com/simtabi/osaat/discussions
+    about: Ask a question or share an idea before filing an issue.

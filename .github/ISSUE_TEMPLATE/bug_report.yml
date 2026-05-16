@@ -1,0 +1,59 @@
+name: Bug report
+description: Something went wrong. Help us reproduce it.
+title: "[bug] "
+labels: ["bug", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for filing a bug report. Please fill in as much detail as
+        you reasonably can — the more reproducible the issue, the faster
+        we can fix it.
+
+        Security issues should go to <opensource@simtabi.com>, not here.
+
+  - type: input
+    id: version
+    attributes:
+      label: osaat version
+      description: Output of `osaat version`
+      placeholder: v0.1.0
+    validations:
+      required: true
+
+  - type: input
+    id: os
+    attributes:
+      label: OS and version
+      description: Output of `sw_vers` on macOS or `lsb_release -a` on Linux
+      placeholder: macOS 14.5 (arm64)
+    validations:
+      required: true
+
+  - type: textarea
+    id: command
+    attributes:
+      label: Command you ran
+      render: shell
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: What you expected to happen
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: What happened instead
+    validations:
+      required: true
+
+  - type: textarea
+    id: extra
+    attributes:
+      label: Additional context
+      description: Logs, screenshots, anything else that helps.
