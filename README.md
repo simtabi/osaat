@@ -25,6 +25,12 @@ Pre-built binaries cover macOS (Intel + Apple Silicon), Linux (amd64,
 arm64, 386, armv7), Windows (amd64, arm64, 386), and FreeBSD (amd64,
 arm64, 386).
 
+**Zero-dep Bash fallback (macOS only):** for the cold-start case
+where Go and Homebrew aren't installed yet, use
+[`scripts/bash-fallback.sh`](scripts/bash-fallback.sh). It produces a
+JSON report compatible with the Go binary's schema. See
+[docs/tools/bash-fallback.md](docs/tools/bash-fallback.md).
+
 ## Quick start
 
 ```sh

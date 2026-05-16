@@ -35,6 +35,23 @@ Windows). ARM 32-bit builds carry a `v7` suffix
 
 Extract and move the `osaat` binary onto your `PATH`.
 
+## Zero-dependency Bash fallback (macOS only)
+
+If you need an audit *before* installing Go or Homebrew (e.g. on a
+brand-new Mac you're about to migrate to), use the Bash fallback
+script. It produces a JSON report compatible with the Go binary's
+schema.
+
+```sh
+curl -fsSL -o bash-fallback.sh \
+  https://raw.githubusercontent.com/simtabi/osaat/main/scripts/bash-fallback.sh
+chmod +x bash-fallback.sh
+./bash-fallback.sh --out ~/backup/pre-migration/
+```
+
+See [`docs/tools/bash-fallback.md`](tools/bash-fallback.md) for
+details on its capabilities and limitations.
+
 ## Source
 
 ```sh

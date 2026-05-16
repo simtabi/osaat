@@ -23,6 +23,7 @@ releases.
 | `osaat restore-help` | [tools/restore-help.md](tools/restore-help.md) |
 | `osaat install-schedule` | [tools/install-schedule.md](tools/install-schedule.md) |
 | `osaat backup` | [tools/backup.md](tools/backup.md) |
+| `bash-fallback.sh` | [tools/bash-fallback.md](tools/bash-fallback.md) |
 
 ## Status
 

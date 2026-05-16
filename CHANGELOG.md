@@ -131,16 +131,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `charmbracelet/lipgloss`, `pelletier/go-toml/v2`, `go-pdf/fpdf`,
   `mattn/go-isatty`.
 
+- `scripts/bash-fallback.sh` — zero-dependency Bash 3.2 script that
+  audits macOS applications and emits an `osaat.report/v1`-compatible
+  JSON file. Uses `mdls`, `codesign`, `du`, `stat`, and `xattr` — no
+  Go, no Homebrew, no Python. For the cold-start case where the Go
+  binary isn't yet installed. End-to-end on the dev Mac: 296 apps,
+  ~120 seconds, output round-trips through `osaat diff` against the
+  Go binary's report.
+- `docs/tools/bash-fallback.md` documents its capabilities and
+  intentional limits (no licenses, no encryption, macOS only).
+
 ### Known limitations (deferred)
 
 - The bubbletea ScanModel exists but does not yet receive per-app
   progress events from the macOS collector — the collector runs to
   completion in one go and emits only phase-boundary log entries.
   Phase 3 wires per-app updates alongside the concurrency pass.
-- `scripts/bash-fallback.sh` (zero-dep macOS recovery) is Phase 2c.
 - Linux / Unix collectors return a "not implemented yet" error;
   Phase 4.
-- No concurrency: collectors run sequentially per app. A 300-app scan
-  takes about 80 seconds on Apple Silicon. Phase 3 adds goroutines.
+- No concurrency in the Go collector: per-app commands run
+  sequentially. A 300-app scan takes about 80 seconds on Apple
+  Silicon. Phase 3 adds goroutines.
 
 [Unreleased]: https://github.com/simtabi/osaat/compare/v0.0.0...HEAD
