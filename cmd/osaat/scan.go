@@ -21,6 +21,7 @@ import (
 
 	"github.com/simtabi/osaat/internal/audit"
 	"github.com/simtabi/osaat/internal/collectors"
+	"github.com/simtabi/osaat/internal/collectors/linux"
 	"github.com/simtabi/osaat/internal/collectors/macos"
 	"github.com/simtabi/osaat/internal/licenses"
 	"github.com/simtabi/osaat/internal/logging"
@@ -451,9 +452,18 @@ func collectorFor(osFlag string, log *slog.Logger, insights []string, progress m
 		}
 		return macos.New(opts...), nil
 	case "linux":
-		return nil, fmt.Errorf("--os linux is not implemented yet (Phase 4)")
+		opts := []linux.Option{
+			linux.WithLogger(log),
+			linux.WithInsights(insights),
+		}
+		// linux.ProgressFn has the same shape as macos.ProgressFn —
+		// adapt without leaking the macos type into the linux package.
+		if progress != nil {
+			opts = append(opts, linux.WithProgressFn(linux.ProgressFn(progress)))
+		}
+		return linux.New(opts...), nil
 	case "unix":
-		return nil, fmt.Errorf("--os unix is not implemented yet (Phase 4)")
+		return nil, fmt.Errorf("--os unix is not implemented yet (Phase 4c)")
 	default:
 		return nil, fmt.Errorf("unsupported --os value: %s (use macos|linux|unix|auto)", osFlag)
 	}

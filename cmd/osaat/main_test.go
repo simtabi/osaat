@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"runtime"
 	"strings"
 	"testing"
 )
@@ -123,10 +124,10 @@ func TestBackupRequiresArguments(t *testing.T) {
 }
 
 // TestScanRejectsUnsupportedOS ensures scan exits cleanly when asked to
-// run a collector that hasn't shipped yet. The check is fast (no real
-// I/O) and guards the user-visible error message.
+// run a collector that hasn't shipped yet. Phase 4a added Linux, so
+// only `unix` is checked here.
 func TestScanRejectsUnsupportedOS(t *testing.T) {
-	for _, osFlag := range []string{"linux", "unix"} {
+	for _, osFlag := range []string{"unix"} {
 		t.Run(osFlag, func(t *testing.T) {
 			cmd := newRootCmd()
 			var buf bytes.Buffer
@@ -141,5 +142,27 @@ func TestScanRejectsUnsupportedOS(t *testing.T) {
 				t.Errorf("error for --os %s should mention not implemented; got: %v", osFlag, err)
 			}
 		})
+	}
+}
+
+// TestScanLinuxOnNonLinuxErrors confirms the Linux collector returns
+// a clean error message when invoked off-platform (this dev mac is
+// darwin). Real Linux behavior is exercised via the parser unit tests
+// and the CI matrix.
+func TestScanLinuxOnNonLinuxErrors(t *testing.T) {
+	if runtime.GOOS == "linux" {
+		t.Skip("running on Linux; this path tests the off-platform guard")
+	}
+	cmd := newRootCmd()
+	var buf bytes.Buffer
+	cmd.SetOut(&buf)
+	cmd.SetErr(&buf)
+	cmd.SetArgs([]string{"scan", "--os", "linux", "--non-interactive", "--format", "json", "--out", t.TempDir()})
+	err := cmd.Execute()
+	if err == nil {
+		t.Fatal("expected error when running --os linux on non-Linux host")
+	}
+	if !strings.Contains(err.Error(), "linux collector requires linux") {
+		t.Errorf("unexpected error: %v", err)
 	}
 }

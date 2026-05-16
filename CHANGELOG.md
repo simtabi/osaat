@@ -197,6 +197,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   formats / license-mode that don't fit cleanly in a profile.
 - `docs/tools/install-schedule.md` rewritten with the final flag
   reference, examples, and platform-specific paths.
+- Linux collector — first cut. Three sub-collectors gated on
+  whether their tool is on PATH, results merged into one record set:
+  - **dpkg-query** (Debian / Ubuntu / Mint / etc.) — emits records
+    with PkgID, Version, Maintainer (parsed into Author), Homepage
+    (VendorURL), and an `apt install <name>` reinstall command.
+    Half-installed and config-only packages are filtered out.
+    Installed-Size is converted from dpkg's reported KB to bytes.
+  - **rpm -qa** (Fedora / RHEL / openSUSE) — emits records with
+    InstalledAt parsed from epoch, Vendor (Author), URL (VendorURL),
+    and a `dnf install` / `zypper install` reinstall command picked
+    by `/etc/os-release` sniffing. RPM's "(none)" placeholders are
+    cleaned up.
+  - **pacman -Q** (Arch / Manjaro / EndeavourOS) — name + version
+    per package, with `pacman -S <name>` reinstall. We deliberately
+    don't follow up with `-Qi` per package to keep scan time
+    bounded; richer fields land in Phase 4b if needed.
+- internal/collectors/linux/linux.go: orchestrator with
+  runtime.GOOS guard, WithLogger / WithInsights / WithRunCmd /
+  WithProgressFn options paralleling the macOS collector.
+- Eight unit tests exercising the parsers against captured-output
+  fixtures, including half-installed dpkg, "(none)" RPM fields,
+  and alternate rpm frontends (dnf vs zypper). Tests run on every
+  OS — they don't need a real package manager.
+- cmd/osaat/scan: `--os linux` now invokes the new collector
+  instead of erroring. On non-Linux hosts the collector returns a
+  clear "requires linux" error.
 - `osaat backup` ships, replacing the Phase 0 stub. Two modes:
   - **Create:** `osaat backup --from <dir> --age-recipient <key>
     --out <file.tar.age>` bundles the known scan output set into a
