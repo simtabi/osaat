@@ -43,14 +43,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `report.<format>` files to `--out`. Currently supports `--format
   json`; CSV / Markdown / HTML and the wizard land in Phase 2.
 
+- CSV, Markdown, and HTML reporters. CSV uses a stable column order
+  matching the prompt spec; Markdown emits a summary by source +
+  signing status followed by the main table; HTML is a single
+  self-contained file with inline styling and vanilla-JS column
+  sorting + a filter input.
+- Restore manifest generation under `internal/restore/`. With
+  `--with-restore`, `osaat scan` writes:
+  - `Brewfile` — `cask "name"` for every Homebrew cask record and
+    `mas "Name", id: N` for every App Store record with a known ID.
+  - `mas-apps.txt` — one App Store ID per line, with name comments.
+  - `RESTORE.md` — per-app checklist for everything outside Homebrew
+    and Mac App Store (direct downloads, .pkg installers, App Store
+    apps without a known ID, unknown source).
+- `osaat diff <old.json> <new.json>` compares two reports. Records
+  are matched on `BundleID` (macOS), `PkgID` (Linux/Unix), or
+  `Name+Version` when neither is set. Outputs in `text` (default),
+  `json` (schema `osaat.diff/v1`), or `markdown`. Exits 0 when clean,
+  1 when differences are found.
+
 ### Known limitations (deferred)
 
 - `--license-mode` flag is recognized but emits a warning; full
-  implementation is Phase 2.
-- CSV / Markdown / HTML reporters return a "not implemented yet"
-  error; Phase 2.
-- Linux / Unix collectors return a "not implemented yet" error; Phase 4.
+  implementation is Phase 2b.
+- The interactive wizard, named profiles, and `bash-fallback.sh` are
+  Phase 2b.
+- Linux / Unix collectors return a "not implemented yet" error;
+  Phase 4.
 - No concurrency: collectors run sequentially per app. A 300-app scan
-  takes about 70 seconds on Apple Silicon. Phase 2 or 3 adds goroutines.
+  takes about 80 seconds on Apple Silicon. Phase 3 adds goroutines.
 
 [Unreleased]: https://github.com/simtabi/osaat/compare/v0.0.0...HEAD

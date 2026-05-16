@@ -17,6 +17,7 @@ import (
 	"github.com/simtabi/osaat/internal/collectors"
 	"github.com/simtabi/osaat/internal/collectors/macos"
 	"github.com/simtabi/osaat/internal/reporters"
+	"github.com/simtabi/osaat/internal/restore"
 )
 
 func newScanCmd() *cobra.Command {
@@ -109,6 +110,17 @@ func runScan(cmd *cobra.Command, _ []string) error {
 		fmt.Fprintf(cmd.OutOrStdout(), "wrote %s\n", outPath)
 	}
 
+	withRestore, _ := cmd.Flags().GetBool("with-restore")
+	if withRestore {
+		paths, err := restore.WriteAll(records, outDir)
+		if err != nil {
+			return fmt.Errorf("restore manifest: %w", err)
+		}
+		for _, p := range paths {
+			fmt.Fprintf(cmd.OutOrStdout(), "wrote %s\n", p)
+		}
+	}
+
 	return nil
 }
 
@@ -137,8 +149,12 @@ func reporterFor(format string) (reporters.Reporter, error) {
 	switch format {
 	case "json":
 		return reporters.NewJSONReporter(), nil
-	case "csv", "markdown", "md", "html":
-		return nil, fmt.Errorf("--format %s is not implemented yet (Phase 2)", format)
+	case "csv":
+		return reporters.NewCSVReporter(), nil
+	case "markdown", "md":
+		return reporters.NewMarkdownReporter(), nil
+	case "html":
+		return reporters.NewHTMLReporter(), nil
 	default:
 		return nil, fmt.Errorf("unknown --format: %s", format)
 	}

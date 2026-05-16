@@ -49,11 +49,11 @@ func TestVersionPrintsDefault(t *testing.T) {
 	}
 }
 
-// TestStubSubcommandsRun exercises subcommands that are still stubs in
-// Phase 1. `scan` was a stub in Phase 0 but now invokes the real macOS
-// collector — it's covered separately in TestScanRejectsUnsupportedOS.
+// TestStubSubcommandsRun exercises subcommands that are still stubs.
+// `scan` and `diff` ship in Phase 1 and Phase 2a respectively and are
+// covered by dedicated tests.
 func TestStubSubcommandsRun(t *testing.T) {
-	for _, sub := range []string{"diff a b", "restore-help --from /tmp/x", "install-schedule", "backup"} {
+	for _, sub := range []string{"restore-help --from /tmp/x", "install-schedule", "backup"} {
 		t.Run(sub, func(t *testing.T) {
 			cmd := newRootCmd()
 			var buf bytes.Buffer
