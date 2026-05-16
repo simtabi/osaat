@@ -178,6 +178,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   events through the progress hook, exits on `DoneMsg` once the
   collector returns, and yields the terminal back for the post-scan
   summary.
+- `osaat install-schedule` ships, replacing the Phase 0 stub.
+  `--daily`, `--weekly`, or `--monthly` selects the cadence (always
+  at 06:00 local time, matching the Simtabi-wide convention).
+  `--dry-run` prints the plan without touching disk; `--uninstall`
+  is idempotent and tears down whatever was installed.
+- `internal/schedule` package with two backends:
+  - **launchd (macOS):** writes a LaunchAgent plist to
+    `~/Library/LaunchAgents/<label>.plist` with the appropriate
+    `StartCalendarInterval` block, loads with
+    `launchctl bootstrap gui/$UID`. Stdout/stderr redirect to
+    `~/.config/osaat/logs/launchd-{stdout,stderr}.log`.
+  - **systemd (Linux):** writes a `Type=oneshot` `.service` and a
+    `Persistent=true` `.timer` to `~/.config/systemd/user/`,
+    `daemon-reload`s and `enable --now`s the timer.
+- `--extra-arg <arg>` (repeatable) appends arbitrary flags to the
+  scheduled scan command, so a scheduled run can carry insights /
+  formats / license-mode that don't fit cleanly in a profile.
+- `docs/tools/install-schedule.md` rewritten with the final flag
+  reference, examples, and platform-specific paths.
 
 ### Known limitations (deferred)
 

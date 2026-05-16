@@ -50,10 +50,10 @@ func TestVersionPrintsDefault(t *testing.T) {
 }
 
 // TestStubSubcommandsRun exercises subcommands that are still stubs.
-// `scan` and `diff` ship in Phase 1 and Phase 2a respectively and are
-// covered by dedicated tests.
+// `scan`, `diff`, and `install-schedule` ship in earlier phases and
+// are covered by dedicated tests.
 func TestStubSubcommandsRun(t *testing.T) {
-	for _, sub := range []string{"restore-help --from /tmp/x", "install-schedule", "backup"} {
+	for _, sub := range []string{"restore-help --from /tmp/x", "backup"} {
 		t.Run(sub, func(t *testing.T) {
 			cmd := newRootCmd()
 			var buf bytes.Buffer
@@ -67,6 +67,27 @@ func TestStubSubcommandsRun(t *testing.T) {
 				t.Errorf("expected stub notice for %s; got:\n%s", sub, buf.String())
 			}
 		})
+	}
+}
+
+// TestInstallScheduleDryRun confirms the scheduler subcommand renders
+// a plan without touching disk when --dry-run is passed.
+func TestInstallScheduleDryRun(t *testing.T) {
+	tmpHome := t.TempDir()
+	t.Setenv("HOME", tmpHome)
+
+	cmd := newRootCmd()
+	var buf bytes.Buffer
+	cmd.SetOut(&buf)
+	cmd.SetErr(&buf)
+	cmd.SetArgs([]string{"install-schedule", "--weekly", "--dry-run"})
+	if err := cmd.Execute(); err != nil {
+		t.Fatalf("install-schedule --weekly --dry-run failed: %v", err)
+	}
+	for _, want := range []string{"Dry run", "write"} {
+		if !strings.Contains(buf.String(), want) {
+			t.Errorf("dry-run output missing %q\n%s", want, buf.String())
+		}
 	}
 }
 
