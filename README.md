@@ -21,20 +21,23 @@ go install github.com/simtabi/osaat/cmd/osaat@latest
 ```
 
 Direct binary: see the [latest release](https://github.com/simtabi/osaat/releases/latest).
+Pre-built binaries cover macOS (Intel + Apple Silicon), Linux (amd64,
+arm64, 386, armv7), Windows (amd64, arm64, 386), and FreeBSD (amd64,
+arm64, 386).
 
 ## Quick start
 
 ```sh
-# Interactive wizard
+# Interactive wizard — auto-opens when stdin is a TTY and no flags are passed
 osaat scan
 
 # Headless
-osaat scan --os macos --format json,markdown --out ./out/
+osaat scan --os macos --format pdf,markdown,txt,json --out ~/backup/
 ```
 
-The wizard opens automatically when stdin is a TTY and no flags are
-passed. At the end of the wizard you get a non-interactive command you can
-run next time.
+The wizard collects every setting, runs the scan, and prints the
+equivalent non-interactive command at the end. Wizard answers can be
+saved as named profiles (`osaat scan --profile <name>`).
 
 ## What gets captured
 
@@ -46,16 +49,53 @@ reinstall command.
 
 License keys, when detectable, go to a separate `secrets.json` —
 unredacted and grouped by category — never to the audit report. Optional
-`age` encryption is supported.
+`age` encryption is supported via `--age-recipient`.
+
+## File locations
+
+| What | Where |
+|---|---|
+| Generated audit outputs | `<Documents>/osaat/<YYYY-MM-DD>/` by default (overridable via `--out` or the wizard) |
+| Daily log file (mode 600) | `~/.config/osaat/logs/osaat-<YYYY-MM-DD>.log` |
+| Named profiles (mode 600) | `~/.config/osaat/profiles/<name>.toml` |
+| Secrets file (mode 600) | `<output>/secrets.json` or `<output>/secrets.json.age` |
+| Output integrity checksums | `<output>/SHA256SUMS` |
+
+The `Documents` folder is auto-detected per OS:
+
+- macOS / Windows: `$HOME/Documents/osaat` (or `%USERPROFILE%\Documents\osaat`).
+- Linux / BSD: `$XDG_DOCUMENTS_DIR/osaat`, falling back to `$HOME/Documents/osaat`.
+
+## Privacy
+
+`osaat` never sends data over the network. Logs are written to disk
+with $HOME paths replaced by `~` and hostname-shaped attributes
+redacted, so a stolen log file doesn't identify the machine.
+
+## Output formats
+
+| Format | File | Use |
+|---|---|---|
+| PDF | `report.pdf` | Print-ready, paginated. Default. |
+| Markdown | `report.md` | Renders cleanly on GitHub or in editors. Default. |
+| Plain text | `report.txt` | grep-friendly, no rendering deps. Default. |
+| JSON | `report.json` | Machine-readable. Required for `osaat diff`. Default. |
+| CSV | `report.csv` | Spreadsheet imports. |
+| HTML | `report.html` | Self-contained file with sortable table + filter input. |
 
 ## Documentation
 
 - [Installation](docs/installation.md)
-- [Configuration](docs/configuration.md)
+- [Configuration](docs/configuration.md) — profiles, environment, paths
 - [Architecture](docs/architecture.md)
 - [Release process](docs/release.md)
 - [Migration / shipping checklist](docs/shipping-checklist.md)
-- Per-command docs: [scan](docs/tools/scan.md) · [diff](docs/tools/diff.md) · [restore-help](docs/tools/restore-help.md) · [install-schedule](docs/tools/install-schedule.md) · [backup](docs/tools/backup.md)
+- Per-command docs:
+  [scan](docs/tools/scan.md) ·
+  [diff](docs/tools/diff.md) ·
+  [restore-help](docs/tools/restore-help.md) ·
+  [install-schedule](docs/tools/install-schedule.md) ·
+  [backup](docs/tools/backup.md)
 
 ## License
 

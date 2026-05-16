@@ -83,10 +83,60 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Go toolchain bumped to 1.24 (required by `filippo.io/age`); CI
   matrix updated to `1.24` and `1.25`.
 
+- Interactive wizard via `charmbracelet/huh` — auto-triggers when
+  stdin is a TTY and no scan-shaping flags are passed. Five groups:
+  scope, output path + formats, license + encryption, insights, save
+  profile. Always prompts for the output directory. Prints the
+  equivalent non-interactive command on completion.
+- `internal/wizard/scanview.go` — `charmbracelet/bubbletea` model for
+  a live scan view (phase label, counters, elapsed time, ✓/✗ final
+  state). Wired into the wizard form via `huh` (which itself runs on
+  bubbletea); a future Phase 3 pass will route per-app progress
+  events into this model.
+- Named profiles in `~/.config/osaat/profiles/<name>.toml`
+  (`osaat.profile/v1` schema). `--profile <name>` loads defaults
+  whose flag wasn't explicitly set; profiles persist whatever the
+  wizard's last "Save profile" page captures.
+- Two new reporters:
+  - **PDF** (`report.pdf`) — paginated A4 layout with title block,
+    per-source summary, table with zebra rows and footer page
+    numbers, built on the pure-Go `go-pdf/fpdf` library.
+  - **Plain text** (`report.txt`) — labeled key-value blocks per
+    record; grep-friendly, no rendering dependencies.
+- New default format set: `pdf`, `markdown`, `txt`, `json`. CSV and
+  HTML remain available.
+- OS-aware default paths via `internal/paths`:
+  - Outputs: `<Documents>/osaat/<YYYY-MM-DD>/` on every OS.
+  - Config: `$HOME/.config/osaat/` on every OS (uniform layout
+    regardless of platform conventions).
+- Privacy-aware file logger (`internal/logging`):
+  - Daily log at `~/.config/osaat/logs/osaat-<YYYY-MM-DD>.log` (mode 600).
+  - `$HOME` paths are replaced with `~` in every record.
+  - Hostname-shaped attribute keys are replaced with `[redacted]`.
+  - No network telemetry. Logs are local-only.
+  - In wizard mode the logger writes only to the file so the form
+    rendering isn't corrupted by stderr output.
+- `SHA256SUMS` written to the output directory listing the digest of
+  every file produced — supports verifiable restore on the new
+  machine.
+- `--quiet` flag for headless runs that suppresses the per-file
+  `wrote ...` lines.
+- Cross-platform release matrix (`.goreleaser.yaml`):
+  - macOS: amd64, arm64.
+  - Linux: amd64, arm64, 386, armv7.
+  - Windows: amd64, arm64, 386.
+  - FreeBSD: amd64, arm64, 386.
+  - Windows archives ship as `.zip`; the rest are `.tar.gz`.
+- New deps: `charmbracelet/huh`, `charmbracelet/bubbletea`,
+  `charmbracelet/lipgloss`, `pelletier/go-toml/v2`, `go-pdf/fpdf`,
+  `mattn/go-isatty`.
+
 ### Known limitations (deferred)
 
-- The interactive wizard, named profiles, and bubbletea live scan
-  view are Phase 2b.2.
+- The bubbletea ScanModel exists but does not yet receive per-app
+  progress events from the macOS collector — the collector runs to
+  completion in one go and emits only phase-boundary log entries.
+  Phase 3 wires per-app updates alongside the concurrency pass.
 - `scripts/bash-fallback.sh` (zero-dep macOS recovery) is Phase 2c.
 - Linux / Unix collectors return a "not implemented yet" error;
   Phase 4.

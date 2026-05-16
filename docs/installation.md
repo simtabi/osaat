@@ -1,7 +1,5 @@
 # Installation
 
-**Status:** skeleton — full body in Phase 5 (release).
-
 ## Homebrew (macOS, Linux)
 
 ```sh
@@ -16,17 +14,24 @@ The tap is configured automatically on first install.
 go install github.com/simtabi/osaat/cmd/osaat@latest
 ```
 
-Requires Go 1.22 or newer.
+Requires Go 1.24 or newer.
 
 ## Direct binary
 
 Download the archive for your platform from the
-[latest release](https://github.com/simtabi/osaat/releases/latest):
+[latest release](https://github.com/simtabi/osaat/releases/latest).
+Every release ships these architectures:
 
-- `osaat_<version>_darwin_arm64.tar.gz` — Apple Silicon Macs
-- `osaat_<version>_darwin_amd64.tar.gz` — Intel Macs
-- `osaat_<version>_linux_amd64.tar.gz` — Linux x86_64
-- `osaat_<version>_linux_arm64.tar.gz` — Linux ARM64
+| OS | Architectures |
+|---|---|
+| macOS | `amd64` (Intel), `arm64` (Apple Silicon) |
+| Linux | `amd64`, `arm64`, `386` (32-bit x86), `armv7` (32-bit ARM) |
+| Windows | `amd64`, `arm64`, `386` |
+| FreeBSD | `amd64`, `arm64`, `386` |
+
+Archive names follow `osaat_<version>_<os>_<arch>.tar.gz` (or `.zip` for
+Windows). ARM 32-bit builds carry a `v7` suffix
+(`..._linux_armv7.tar.gz`).
 
 Extract and move the `osaat` binary onto your `PATH`.
 
