@@ -103,11 +103,16 @@ func (c *Collector) Collect(ctx context.Context) ([]audit.AppRecord, error) {
 		{"dpkg", "dpkg-query", c.collectDpkg},
 		{"rpm", "rpm", c.collectRpm},
 		{"pacman", "pacman", c.collectPacman},
+		{"snap", "snap", c.collectSnap},
+		{"flatpak", "flatpak", c.collectFlatpak},
+		{"appimage", "", c.collectAppImage}, // no required tool; always runs on Linux
 	}
 
 	var all []audit.AppRecord
 	for _, s := range subs {
-		if !collectors.LookupExe(s.exe) {
+		// s.exe == "" means the sub-collector doesn't shell out to an
+		// optional tool — it always runs (e.g. AppImage filesystem walk).
+		if s.exe != "" && !collectors.LookupExe(s.exe) {
 			continue
 		}
 		c.emitProgress(s.name)

@@ -223,6 +223,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - cmd/osaat/scan: `--os linux` now invokes the new collector
   instead of erroring. On non-Linux hosts the collector returns a
   clear "requires linux" error.
+- Three more Linux sub-collectors join the orchestrator:
+  - **snap** (`snap list --color=never --unicode=never`) — captures
+    name, version, publisher, and tracking channel. Channel-aware
+    reinstall: stable channels get `snap install <name>`, non-stable
+    channels get `snap install <name> --channel=<channel>`. The
+    legacy verified-publisher Unicode checkmark is stripped if it
+    leaks through.
+  - **flatpak** (`flatpak list --app --columns=...`) — captures the
+    flatpak application ID (PkgID), display name, version, branch,
+    and origin. Reinstall includes the origin remote and a
+    `//<branch>` suffix when the branch isn't `stable`.
+  - **AppImage** — filesystem walk of `~/.local/bin`,
+    `~/Applications`, `~/AppImages`, and `~/Downloads` (non-recursive)
+    for files ending in `.AppImage` (case-insensitive). Records
+    capture path, size, and mtime. AppImages don't carry reliable
+    embedded version metadata, so reinstall is a humanized
+    "(redownload AppImage — vendor-specific)" placeholder.
+- Eight more unit tests covering snap header detection, verified-mark
+  stripping, channel-aware reinstall, flatpak branch suffix, blank
+  /non-ID-row skipping, AppImage extension matching (case-insensitive),
+  and missing-directory tolerance.
 - `osaat backup` ships, replacing the Phase 0 stub. Two modes:
   - **Create:** `osaat backup --from <dir> --age-recipient <key>
     --out <file.tar.age>` bundles the known scan output set into a
