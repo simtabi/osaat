@@ -16,8 +16,10 @@ import (
 
 	"github.com/simtabi/osaat/internal/collectors"
 	"github.com/simtabi/osaat/internal/collectors/macos"
+	"github.com/simtabi/osaat/internal/licenses"
 	"github.com/simtabi/osaat/internal/reporters"
 	"github.com/simtabi/osaat/internal/restore"
+	"github.com/simtabi/osaat/internal/secrets"
 )
 
 func newScanCmd() *cobra.Command {
@@ -60,9 +62,12 @@ func runScan(cmd *cobra.Command, _ []string) error {
 
 	log := newLogger(verbose)
 
-	if licenseMode != "none" && licenseMode != "" {
-		log.Warn("--license-mode is recognized but not implemented yet (Phase 2)", "mode", licenseMode)
+	scanner, err := licenses.For(licenseMode)
+	if err != nil {
+		return err
 	}
+
+	ageRecipient, _ := cmd.Flags().GetString("age-recipient")
 
 	collector, err := collectorFor(osFlag, log)
 	if err != nil {
@@ -121,7 +126,53 @@ func runScan(cmd *cobra.Command, _ []string) error {
 		}
 	}
 
+	if scanner != nil {
+		sec, err := scanner.Scan(ctx, records)
+		if err != nil {
+			return fmt.Errorf("license scan: %w", err)
+		}
+		if sec != nil && !sec.IsEmpty() {
+			path, err := writeSecrets(sec, outDir, ageRecipient)
+			if err != nil {
+				return err
+			}
+			fmt.Fprintf(cmd.OutOrStdout(), "wrote %s\n", path)
+		} else {
+			log.Info("license scan produced no findings; nothing to write")
+		}
+	}
+
 	return nil
+}
+
+// writeSecrets writes the secrets file to outDir, encrypted to the
+// provided age recipient when set. Returns the path that was written.
+// The plain file is chmod 600; the encrypted one is 644 (it's safe to
+// share an age ciphertext).
+func writeSecrets(sec *secrets.File, outDir, recipient string) (string, error) {
+	if recipient == "" {
+		path := filepath.Join(outDir, "secrets.json")
+		f, err := os.OpenFile(path, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0o600)
+		if err != nil {
+			return "", fmt.Errorf("create %s: %w", path, err)
+		}
+		defer f.Close()
+		if err := secrets.WriteJSON(sec, f); err != nil {
+			return "", fmt.Errorf("write %s: %w", path, err)
+		}
+		return path, nil
+	}
+
+	path := filepath.Join(outDir, "secrets.json.age")
+	f, err := os.OpenFile(path, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0o644)
+	if err != nil {
+		return "", fmt.Errorf("create %s: %w", path, err)
+	}
+	defer f.Close()
+	if err := secrets.WriteEncrypted(sec, []string{recipient}, f); err != nil {
+		return "", fmt.Errorf("encrypt %s: %w", path, err)
+	}
+	return path, nil
 }
 
 func newLogger(verbose bool) *slog.Logger {

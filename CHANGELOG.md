@@ -61,13 +61,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `Name+Version` when neither is set. Outputs in `text` (default),
   `json` (schema `osaat.diff/v1`), or `markdown`. Exits 0 when clean,
   1 when differences are found.
+- License extraction with three scanner modes:
+  - `--license-mode checklist`: emits `look_here` / `look_for`
+    pointers for every non-system app; no file reads.
+  - `--license-mode best-effort`: reads
+    `~/Library/Preferences/<BundleID>.plist` and
+    `~/Library/Application Support/<BundleID>/<licen[cs]e>.plist`,
+    matches field names and value patterns against license-shaped
+    regexes, and emits findings tagged `high` / `medium` / `low`
+    confidence.
+  - `--license-mode aggressive`: best-effort plus a manual Keychain
+    pointer in the checklist for the user to follow up on.
+- `internal/secrets/`: canonical secrets file (schema
+  `osaat.secrets/v1`) with categories grouped by source. License
+  keys are stored in full, never redacted — protection comes from
+  encryption at rest, not masking.
+- Optional `--age-recipient <age1...>` encrypts the secrets file via
+  `filippo.io/age`, producing `secrets.json.age` instead of
+  `secrets.json`. Plain `secrets.json` is written with mode 600.
+- `report.json` schema unchanged — license keys do not appear there.
+- Go toolchain bumped to 1.24 (required by `filippo.io/age`); CI
+  matrix updated to `1.24` and `1.25`.
 
 ### Known limitations (deferred)
 
-- `--license-mode` flag is recognized but emits a warning; full
-  implementation is Phase 2b.
-- The interactive wizard, named profiles, and `bash-fallback.sh` are
-  Phase 2b.
+- The interactive wizard, named profiles, and bubbletea live scan
+  view are Phase 2b.2.
+- `scripts/bash-fallback.sh` (zero-dep macOS recovery) is Phase 2c.
 - Linux / Unix collectors return a "not implemented yet" error;
   Phase 4.
 - No concurrency: collectors run sequentially per app. A 300-app scan
