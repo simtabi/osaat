@@ -49,8 +49,11 @@ func TestVersionPrintsDefault(t *testing.T) {
 	}
 }
 
+// TestStubSubcommandsRun exercises subcommands that are still stubs in
+// Phase 1. `scan` was a stub in Phase 0 but now invokes the real macOS
+// collector — it's covered separately in TestScanRejectsUnsupportedOS.
 func TestStubSubcommandsRun(t *testing.T) {
-	for _, sub := range []string{"scan", "diff a b", "restore-help --from /tmp/x", "install-schedule", "backup"} {
+	for _, sub := range []string{"diff a b", "restore-help --from /tmp/x", "install-schedule", "backup"} {
 		t.Run(sub, func(t *testing.T) {
 			cmd := newRootCmd()
 			var buf bytes.Buffer
@@ -62,6 +65,28 @@ func TestStubSubcommandsRun(t *testing.T) {
 			}
 			if !strings.Contains(buf.String(), "not implemented yet") {
 				t.Errorf("expected stub notice for %s; got:\n%s", sub, buf.String())
+			}
+		})
+	}
+}
+
+// TestScanRejectsUnsupportedOS ensures scan exits cleanly when asked to
+// run a collector that hasn't shipped yet. The check is fast (no real
+// I/O) and guards the user-visible error message.
+func TestScanRejectsUnsupportedOS(t *testing.T) {
+	for _, osFlag := range []string{"linux", "unix"} {
+		t.Run(osFlag, func(t *testing.T) {
+			cmd := newRootCmd()
+			var buf bytes.Buffer
+			cmd.SetOut(&buf)
+			cmd.SetErr(&buf)
+			cmd.SetArgs([]string{"scan", "--os", osFlag, "--non-interactive"})
+			err := cmd.Execute()
+			if err == nil {
+				t.Fatalf("expected error for --os %s; got nil", osFlag)
+			}
+			if !strings.Contains(err.Error(), "not implemented") {
+				t.Errorf("error for --os %s should mention not implemented; got: %v", osFlag, err)
 			}
 		})
 	}

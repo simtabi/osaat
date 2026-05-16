@@ -34,10 +34,11 @@ go.work.sum
 .claude/.session/
 .claude/cache/
 
-# Tool output — these are user data, never committed
-/out/
-/osaat-out/
-/audit-*/
+# Tool output — these are user data, never committed (any depth so test
+# runs invoked from a subdirectory don't leave stray output behind)
+out/
+osaat-out/
+audit-*/
 
 # Secrets — never committed even if accidentally generated in-repo
 secrets.json
