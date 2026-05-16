@@ -29,10 +29,10 @@ type AppRecord struct {
 	InstallerHash string `json:"installer_sha256,omitempty"`
 
 	// Filesystem
-	Path        string    `json:"path,omitempty"`
-	SizeBytes   int64     `json:"size_bytes,omitempty"`
-	InstalledAt time.Time `json:"installed_at,omitempty"`
-	LastUsedAt  time.Time `json:"last_used_at,omitempty"`
+	Path        string     `json:"path,omitempty"`
+	SizeBytes   int64      `json:"size_bytes,omitempty"`
+	InstalledAt *time.Time `json:"installed_at,omitempty"`
+	LastUsedAt  *time.Time `json:"last_used_at,omitempty"`
 
 	// Security
 	SigningStatus SigningStatus `json:"signing_status,omitempty"`

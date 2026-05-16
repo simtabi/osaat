@@ -140,6 +140,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   Go binary's report.
 - `docs/tools/bash-fallback.md` documents its capabilities and
   intentional limits (no licenses, no encryption, macOS only).
+- Two macOS insight enrichers, gated on the `--insights` flag:
+  - **Forgotten apps** (`--insights forgotten`): reads
+    `kMDItemLastUsedDate` via `mdls` and flags apps whose last-used
+    date is older than `--insights-forgotten-months` (default 6).
+    Apps that have never been opened are flagged when their install
+    date is past the same cutoff. System / sandbox / Homebrew-formula
+    apps are excluded. End-to-end on the dev Mac: 87 of 296 apps
+    flagged with a 6-month cutoff.
+  - **Apple Silicon compatibility** (`--insights apple-silicon`):
+    runs `lipo -archs` on each app's main executable; sets
+    `apple_silicon` to true / false and adds an `"intel-only binary"`
+    collector note for Intel-only apps. Left `null` when lipo can't
+    locate the executable.
+- `audit.MarkForgotten(records, months, now)` helper applies the
+  forgotten flag in a post-collection pass. Returns the count for
+  logging.
+- `AppRecord.InstalledAt` and `AppRecord.LastUsedAt` are now
+  `*time.Time` so they're cleanly omitted from JSON when unset
+  (previously serialized as `"0001-01-01T00:00:00Z"`).
 
 ### Known limitations (deferred)
 

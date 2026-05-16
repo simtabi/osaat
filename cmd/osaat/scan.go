@@ -97,7 +97,7 @@ func runScan(cmd *cobra.Command, _ []string) error {
 	}
 	defer closeLog()
 
-	collector, err := collectorFor(in.OS, logger)
+	collector, err := collectorFor(in.OS, logger, in.Insights)
 	if err != nil {
 		return err
 	}
@@ -122,6 +122,12 @@ func runScan(cmd *cobra.Command, _ []string) error {
 	}
 	duration := time.Since(start).Round(time.Millisecond)
 	logger.Info("scan complete", "duration", duration, "records", len(records))
+
+	// Post-collection insights — currently just the forgotten-apps flag.
+	if containsString(in.Insights, "forgotten") {
+		flagged := audit.MarkForgotten(records, in.ForgottenMonths, time.Now())
+		logger.Info("forgotten apps flagged", "count", flagged, "months", in.ForgottenMonths)
+	}
 
 	if err := os.MkdirAll(in.Out, 0o755); err != nil {
 		return fmt.Errorf("create out dir: %w", err)
@@ -404,10 +410,13 @@ func fileSHA256(path string) (string, error) {
 	return hex.EncodeToString(h.Sum(nil)), nil
 }
 
-func collectorFor(osFlag string, log *slog.Logger) (collectors.Collector, error) {
+func collectorFor(osFlag string, log *slog.Logger, insights []string) (collectors.Collector, error) {
 	switch osFlag {
 	case "macos":
-		return macos.New(macos.WithLogger(log)), nil
+		return macos.New(
+			macos.WithLogger(log),
+			macos.WithInsights(insights),
+		), nil
 	case "linux":
 		return nil, fmt.Errorf("--os linux is not implemented yet (Phase 4)")
 	case "unix":
@@ -442,6 +451,15 @@ func getBool(cmd *cobra.Command, name string) bool {
 	}
 	v, _ := cmd.Flags().GetBool(name)
 	return v
+}
+
+func containsString(haystack []string, needle string) bool {
+	for _, s := range haystack {
+		if s == needle {
+			return true
+		}
+	}
+	return false
 }
 
 func applyProfile(cmd *cobra.Command, in *scanInputs, p profiles.Profile) {

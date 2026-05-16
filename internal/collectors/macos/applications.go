@@ -102,9 +102,10 @@ func readApp(appPath string, defaultSource audit.Source) (audit.AppRecord, error
 		version = info.CFBundleVersion
 	}
 
-	var installedAt time.Time
+	var installedAt *time.Time
 	if stat, err := os.Stat(appPath); err == nil {
-		installedAt = stat.ModTime()
+		t := stat.ModTime()
+		installedAt = &t
 	}
 
 	size, _ := dirSize(appPath)

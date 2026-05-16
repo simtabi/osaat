@@ -94,10 +94,10 @@ func (r *TextReporter) Write(records []audit.AppRecord, w io.Writer) error {
 		if rec.SizeBytes > 0 {
 			writeIfSet(&b, "size", humanSize(rec.SizeBytes))
 		}
-		if !rec.InstalledAt.IsZero() {
+		if rec.InstalledAt != nil {
 			writeIfSet(&b, "installed", rec.InstalledAt.UTC().Format(time.RFC3339))
 		}
-		if !rec.LastUsedAt.IsZero() {
+		if rec.LastUsedAt != nil {
 			writeIfSet(&b, "lastused", rec.LastUsedAt.UTC().Format(time.RFC3339))
 		}
 		writeIfSet(&b, "download",  rec.DownloadURL)

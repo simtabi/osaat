@@ -81,8 +81,8 @@ func csvRow(r audit.AppRecord) []string {
 		r.PkgID,
 		r.Path,
 		intIfNonZero(r.SizeBytes),
-		timeIfNonZero(r.InstalledAt),
-		timeIfNonZero(r.LastUsedAt),
+		timePtrString(r.InstalledAt),
+		timePtrString(r.LastUsedAt),
 		string(r.SigningStatus),
 		r.SigningTeam,
 		boolPtr(r.AppleSilicon),
@@ -101,6 +101,14 @@ func intIfNonZero(n int64) string {
 
 func timeIfNonZero(t time.Time) string {
 	if t.IsZero() {
+		return ""
+	}
+	return t.UTC().Format(time.RFC3339)
+}
+
+// timePtrString formats a *time.Time as RFC 3339 UTC, or "" when nil.
+func timePtrString(t *time.Time) string {
+	if t == nil {
 		return ""
 	}
 	return t.UTC().Format(time.RFC3339)

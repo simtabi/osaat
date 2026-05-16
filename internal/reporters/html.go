@@ -70,7 +70,7 @@ func (r *HTMLReporter) Write(records []audit.AppRecord, w io.Writer) error {
 			Author:       rec.Author,
 			BundleID:     rec.BundleID,
 			Size:         humanSize(rec.SizeBytes),
-			InstalledAt:  timeIfNonZero(rec.InstalledAt),
+			InstalledAt:  timePtrString(rec.InstalledAt),
 			DownloadURL:  rec.DownloadURL,
 			ReinstallCmd: rec.ReinstallCmd,
 			Notes:        strings.Join(rec.CollectorNotes, "; "),
