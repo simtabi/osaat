@@ -17,13 +17,13 @@ import (
 // from the CLI, which is gated. We instead record the agent (e.g.
 // "Safari", "Chrome") as a CollectorNote.
 func (c *Collector) enrichFromQuarantine(ctx context.Context, records []audit.AppRecord) error {
-	for i := range records {
+	c.runPerApp(ctx, records, func(ctx context.Context, i int) {
 		if records[i].Path == "" {
-			continue
+			return
 		}
 		out, err := c.runCmd(ctx, "xattr", "-p", "com.apple.quarantine", records[i].Path)
 		if err != nil {
-			continue
+			return
 		}
 		agent := parseQuarantineAgent(out)
 		if agent != "" {
@@ -32,7 +32,7 @@ func (c *Collector) enrichFromQuarantine(ctx context.Context, records []audit.Ap
 				records[i].Source = audit.SourceDMG
 			}
 		}
-	}
+	})
 	return nil
 }
 

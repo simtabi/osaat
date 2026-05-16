@@ -21,18 +21,18 @@ func (c *Collector) enrichFromLipo(ctx context.Context, records []audit.AppRecor
 	if !collectors.LookupExe("lipo") {
 		return nil
 	}
-	for i := range records {
+	c.runPerApp(ctx, records, func(ctx context.Context, i int) {
 		exe := executableFor(records[i])
 		if exe == "" {
-			continue
+			return
 		}
 		out, err := c.runCmd(ctx, "lipo", "-archs", exe)
 		if err != nil {
-			continue
+			return
 		}
 		archs := strings.Fields(strings.TrimSpace(string(out)))
 		if len(archs) == 0 {
-			continue
+			return
 		}
 		hasARM64 := false
 		for _, a := range archs {
@@ -45,7 +45,7 @@ func (c *Collector) enrichFromLipo(ctx context.Context, records []audit.AppRecor
 		if !hasARM64 {
 			records[i].Note("intel-only binary (Rosetta required on Apple Silicon)")
 		}
-	}
+	})
 	return nil
 }
 

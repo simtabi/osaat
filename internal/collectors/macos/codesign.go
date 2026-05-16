@@ -18,9 +18,9 @@ func (c *Collector) enrichFromCodesign(ctx context.Context, records []audit.AppR
 	if !collectors.LookupExe("codesign") {
 		return nil
 	}
-	for i := range records {
+	c.runPerApp(ctx, records, func(ctx context.Context, i int) {
 		if records[i].Path == "" {
-			continue
+			return
 		}
 		out := collectors.RunCmdCombined(ctx, "codesign", "-dv", "--verbose=4", records[i].Path)
 		status, team, authority := parseCodesign(string(out))
@@ -34,7 +34,7 @@ func (c *Collector) enrichFromCodesign(ctx context.Context, records []audit.AppR
 		if status == audit.SigningUnsigned {
 			records[i].Note("unsigned binary")
 		}
-	}
+	})
 	return nil
 }
 

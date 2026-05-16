@@ -17,23 +17,20 @@ var mdlsURLRe = regexp.MustCompile(`"([^"]+)"`)
 //
 // Missing attributes are not an error — many apps (system, App Store,
 // or installed by a package manager) never had a quarantine-source URL.
+// Runs in parallel across records via runPerApp.
 func (c *Collector) enrichFromMdls(ctx context.Context, records []audit.AppRecord) error {
-	for i := range records {
-		if records[i].Path == "" {
-			continue
-		}
-		if records[i].DownloadURL != "" {
-			continue
+	c.runPerApp(ctx, records, func(ctx context.Context, i int) {
+		if records[i].Path == "" || records[i].DownloadURL != "" {
+			return
 		}
 		out, err := c.runCmd(ctx, "mdls", "-name", "kMDItemWhereFroms", records[i].Path)
 		if err != nil {
-			// mdls failure on a single path is non-fatal; don't abort the pass.
-			continue
+			return
 		}
 		if url := parseMdlsWhereFroms(out); url != "" {
 			records[i].DownloadURL = url
 		}
-	}
+	})
 	return nil
 }
 

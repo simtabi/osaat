@@ -159,6 +159,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `AppRecord.InstalledAt` and `AppRecord.LastUsedAt` are now
   `*time.Time` so they're cleanly omitted from JSON when unset
   (previously serialized as `"0001-01-01T00:00:00Z"`).
+- Concurrent per-app enrichers — `mdls`, `xattr`, `codesign`,
+  `last_used`, and `lipo` now run via a bounded worker pool
+  (`DefaultParallelism = 16`, overridable with
+  `macos.WithParallelism`). Each goroutine writes to a distinct
+  record index, so the slice update is race-free under
+  `go test -race`. Per-record work is preserved exactly — no
+  reordering, no dropped fields. End-to-end on the dev Mac:
+  ~57 seconds for the same 296-app scan that previously took ~98s,
+  a roughly 1.7× speedup. CPU utilization climbed from ~45% to ~83%.
+- Progress-callback hook on the macOS collector
+  (`macos.WithProgressFn`). The callback fires at every enricher
+  boundary with the enricher's short name. The wizard wires this to
+  the bubbletea `ScanModel` so users see the current phase update
+  live during a wizard-mode run.
+- Bubbletea `ScanView` is now started by `osaat scan` in wizard
+  mode: a `tea.Program` runs in a goroutine, receives `PhaseMsg`
+  events through the progress hook, exits on `DoneMsg` once the
+  collector returns, and yields the terminal back for the post-scan
+  summary.
 
 ### Known limitations (deferred)
 

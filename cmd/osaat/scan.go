@@ -15,6 +15,7 @@ import (
 	"syscall"
 	"time"
 
+	tea "github.com/charmbracelet/bubbletea"
 	"github.com/mattn/go-isatty"
 	"github.com/spf13/cobra"
 
@@ -97,10 +98,6 @@ func runScan(cmd *cobra.Command, _ []string) error {
 	}
 	defer closeLog()
 
-	collector, err := collectorFor(in.OS, logger, in.Insights)
-	if err != nil {
-		return err
-	}
 	scanner, err := licenses.For(in.LicenseMode)
 	if err != nil {
 		return err
@@ -109,18 +106,51 @@ func runScan(cmd *cobra.Command, _ []string) error {
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
 
+	// In wizard mode the bubbletea ScanView owns the terminal while
+	// the collector runs. It receives PhaseMsg events at every
+	// enricher boundary and a DoneMsg at the end. Headless runs
+	// neither start the program nor pass a progressFn.
+	var (
+		teaProgram *tea.Program
+		teaDone    chan struct{}
+		progressFn macos.ProgressFn
+	)
+	if in.Interactive {
+		model := wizard.NewScanModel()
+		teaProgram = tea.NewProgram(model, tea.WithoutSignalHandler())
+		teaDone = make(chan struct{})
+		go func() {
+			_, _ = teaProgram.Run()
+			close(teaDone)
+		}()
+		progressFn = func(phase string) {
+			teaProgram.Send(wizard.PhaseMsg{Phase: phase})
+		}
+	}
+
+	collector, err := collectorFor(in.OS, logger, in.Insights, progressFn)
+	if err != nil {
+		return err
+	}
+
 	start := time.Now()
 	logger.Info("starting scan", "os", in.OS, "out", in.Out)
 
-	if !in.Quiet {
+	if !in.Interactive && !in.Quiet {
 		fmt.Fprintf(cmd.OutOrStdout(), "Scanning... outputs will land in %s\n", paths.TidyPath(in.Out))
 	}
 
-	records, err := collector.Collect(ctx)
-	if err != nil {
-		return fmt.Errorf("collect: %w", err)
-	}
+	records, scanErr := collector.Collect(ctx)
 	duration := time.Since(start).Round(time.Millisecond)
+
+	if teaProgram != nil {
+		teaProgram.Send(wizard.DoneMsg{Duration: duration, Err: scanErr})
+		<-teaDone
+	}
+
+	if scanErr != nil {
+		return fmt.Errorf("collect: %w", scanErr)
+	}
 	logger.Info("scan complete", "duration", duration, "records", len(records))
 
 	// Post-collection insights — currently just the forgotten-apps flag.
@@ -410,13 +440,17 @@ func fileSHA256(path string) (string, error) {
 	return hex.EncodeToString(h.Sum(nil)), nil
 }
 
-func collectorFor(osFlag string, log *slog.Logger, insights []string) (collectors.Collector, error) {
+func collectorFor(osFlag string, log *slog.Logger, insights []string, progress macos.ProgressFn) (collectors.Collector, error) {
 	switch osFlag {
 	case "macos":
-		return macos.New(
+		opts := []macos.Option{
 			macos.WithLogger(log),
 			macos.WithInsights(insights),
-		), nil
+		}
+		if progress != nil {
+			opts = append(opts, macos.WithProgressFn(progress))
+		}
+		return macos.New(opts...), nil
 	case "linux":
 		return nil, fmt.Errorf("--os linux is not implemented yet (Phase 4)")
 	case "unix":

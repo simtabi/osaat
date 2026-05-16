@@ -23,19 +23,19 @@ var mdlsDateLayouts = []string{
 // "(null)" and are left zero-valued — the reporter / forgotten-apps
 // logic interprets a zero time as "no signal".
 func (c *Collector) enrichFromLastUsed(ctx context.Context, records []audit.AppRecord) error {
-	for i := range records {
+	c.runPerApp(ctx, records, func(ctx context.Context, i int) {
 		if records[i].Path == "" {
-			continue
+			return
 		}
 		out, err := c.runCmd(ctx, "mdls", "-name", "kMDItemLastUsedDate", "-raw", records[i].Path)
 		if err != nil {
-			continue
+			return
 		}
 		t := parseMdlsDate(string(out))
 		if !t.IsZero() {
 			records[i].LastUsedAt = &t
 		}
-	}
+	})
 	return nil
 }
 
