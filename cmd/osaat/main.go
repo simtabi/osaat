@@ -32,6 +32,7 @@ interactive wizard. Otherwise it runs headlessly with the flag values.`,
 	root.PersistentFlags().String("profile", "", "named profile under ~/.config/osaat/profiles/")
 	root.PersistentFlags().Bool("non-interactive", false, "disable interactive wizard")
 	root.PersistentFlags().Bool("verbose", false, "verbose logging")
+	root.PersistentFlags().Bool("quiet", false, "suppress per-file `wrote ...` lines")
 
 	root.AddCommand(newScanCmd())
 	root.AddCommand(newDiffCmd())

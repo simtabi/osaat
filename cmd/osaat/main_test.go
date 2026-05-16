@@ -50,10 +50,10 @@ func TestVersionPrintsDefault(t *testing.T) {
 }
 
 // TestStubSubcommandsRun exercises subcommands that are still stubs.
-// `scan`, `diff`, and `install-schedule` ship in earlier phases and
+// scan, diff, install-schedule, and backup ship in earlier phases and
 // are covered by dedicated tests.
 func TestStubSubcommandsRun(t *testing.T) {
-	for _, sub := range []string{"restore-help --from /tmp/x", "backup"} {
+	for _, sub := range []string{"restore-help --from /tmp/x"} {
 		t.Run(sub, func(t *testing.T) {
 			cmd := newRootCmd()
 			var buf bytes.Buffer
@@ -88,6 +88,37 @@ func TestInstallScheduleDryRun(t *testing.T) {
 		if !strings.Contains(buf.String(), want) {
 			t.Errorf("dry-run output missing %q\n%s", want, buf.String())
 		}
+	}
+}
+
+// TestBackupRequiresArguments ensures the backup subcommand surfaces
+// clean errors when invoked without the necessary flags. Both modes
+// short-circuit before any I/O.
+func TestBackupRequiresArguments(t *testing.T) {
+	for _, tc := range []struct {
+		name string
+		args []string
+		want string
+	}{
+		{"create missing --from", []string{"backup", "--age-recipient", "age1xyz"}, "--from"},
+		{"create missing --age-recipient", []string{"backup", "--from", "/tmp"}, "--age-recipient"},
+		{"decrypt missing --in", []string{"backup", "--decrypt"}, "--in"},
+		{"decrypt missing --out", []string{"backup", "--decrypt", "--in", "/tmp/x.tar.age"}, "--out"},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			cmd := newRootCmd()
+			var buf bytes.Buffer
+			cmd.SetOut(&buf)
+			cmd.SetErr(&buf)
+			cmd.SetArgs(tc.args)
+			err := cmd.Execute()
+			if err == nil {
+				t.Fatalf("expected error for %v", tc.args)
+			}
+			if !strings.Contains(err.Error(), tc.want) {
+				t.Errorf("error should mention %q; got: %v", tc.want, err)
+			}
+		})
 	}
 }
 

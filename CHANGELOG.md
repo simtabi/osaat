@@ -197,6 +197,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   formats / license-mode that don't fit cleanly in a profile.
 - `docs/tools/install-schedule.md` rewritten with the final flag
   reference, examples, and platform-specific paths.
+- `osaat backup` ships, replacing the Phase 0 stub. Two modes:
+  - **Create:** `osaat backup --from <dir> --age-recipient <key>
+    --out <file.tar.age>` bundles the known scan output set into a
+    single age-encrypted tar archive.
+  - **Decrypt:** `osaat backup --decrypt --in <file.tar.age>
+    --age-key <path> --out <dir>` reverses the operation. `--age-key`
+    falls back to `~/.age/key.txt` when present.
+- `internal/restore/archive.go`: streaming `WriteArchive` /
+  `DecryptArchive` built on `filippo.io/age` and stdlib
+  `archive/tar`. Tar entry names are validated against absolute
+  paths and `..` traversal. Known-set filtering by default;
+  `--include-extras` copies every regular file in the source dir.
+- `restore.ParseRecipients` / `restore.LoadIdentitiesFromFile`
+  helpers — public so future subcommands (e.g. an `osaat secrets
+  decrypt`) can reuse the same parsing path.
+- `--quiet` is now a persistent root flag (was scan-only) so every
+  subcommand can opt into the same suppression behavior.
+- `docs/tools/backup.md` rewritten with the final reference,
+  examples, exit codes, and the round-trip guarantee.
 
 ### Known limitations (deferred)
 

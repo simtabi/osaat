@@ -59,7 +59,6 @@ Defaults follow the project conventions:
 	cmd.Flags().Int("insights-forgotten-months", 6, "months of inactivity that flag an app as forgotten")
 	cmd.Flags().Bool("with-restore", false, "also emit Brewfile, mas list, RESTORE.md")
 	cmd.Flags().Bool("interactive", false, "force the interactive wizard")
-	cmd.Flags().Bool("quiet", false, "suppress per-file `wrote ...` lines")
 
 	return cmd
 }
