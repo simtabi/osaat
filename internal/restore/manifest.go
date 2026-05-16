@@ -26,11 +26,31 @@ func WriteAll(records []audit.AppRecord, outDir string) ([]string, error) {
 		filename string
 		write    func(io.Writer) error
 	}
+	// macOS-flavoured manifests are always emitted — empty Brewfile /
+	// mas-apps.txt files still serve as placeholders users can edit.
+	// Per-Linux-package-manager lists are emitted only when the
+	// scan contains records of the matching source, so a macOS scan
+	// doesn't leave empty `apt-packages.txt` noise behind.
 	artifacts := []artifact{
 		{"Brewfile", func(w io.Writer) error { return WriteBrewfile(records, w) }},
 		{"mas-apps.txt", func(w io.Writer) error { return WriteMasList(records, w) }},
-		{"RESTORE.md", func(w io.Writer) error { return WriteRestoreDoc(records, w) }},
 	}
+	if HasSource(records, audit.SourceDpkg) {
+		artifacts = append(artifacts, artifact{"apt-packages.txt", func(w io.Writer) error { return WriteAptList(records, w) }})
+	}
+	if HasSource(records, audit.SourceRpm) {
+		artifacts = append(artifacts, artifact{"dnf-packages.txt", func(w io.Writer) error { return WriteDnfList(records, w) }})
+	}
+	if HasSource(records, audit.SourcePacman) {
+		artifacts = append(artifacts, artifact{"pacman-packages.txt", func(w io.Writer) error { return WritePacmanList(records, w) }})
+	}
+	if HasSource(records, audit.SourceSnap) {
+		artifacts = append(artifacts, artifact{"snap-list.txt", func(w io.Writer) error { return WriteSnapList(records, w) }})
+	}
+	if HasSource(records, audit.SourceFlatpak) {
+		artifacts = append(artifacts, artifact{"flatpak-list.txt", func(w io.Writer) error { return WriteFlatpakList(records, w) }})
+	}
+	artifacts = append(artifacts, artifact{"RESTORE.md", func(w io.Writer) error { return WriteRestoreDoc(records, w) }})
 
 	for _, a := range artifacts {
 		path := filepath.Join(outDir, a.filename)

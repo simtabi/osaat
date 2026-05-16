@@ -23,6 +23,7 @@ import (
 	"github.com/simtabi/osaat/internal/collectors"
 	"github.com/simtabi/osaat/internal/collectors/linux"
 	"github.com/simtabi/osaat/internal/collectors/macos"
+	unixcoll "github.com/simtabi/osaat/internal/collectors/unix"
 	"github.com/simtabi/osaat/internal/licenses"
 	"github.com/simtabi/osaat/internal/logging"
 	"github.com/simtabi/osaat/internal/paths"
@@ -463,7 +464,13 @@ func collectorFor(osFlag string, log *slog.Logger, insights []string, progress m
 		}
 		return linux.New(opts...), nil
 	case "unix":
-		return nil, fmt.Errorf("--os unix is not implemented yet (Phase 4c)")
+		opts := []unixcoll.Option{
+			unixcoll.WithLogger(log),
+		}
+		if progress != nil {
+			opts = append(opts, unixcoll.WithProgressFn(unixcoll.ProgressFn(progress)))
+		}
+		return unixcoll.New(opts...), nil
 	default:
 		return nil, fmt.Errorf("unsupported --os value: %s (use macos|linux|unix|auto)", osFlag)
 	}

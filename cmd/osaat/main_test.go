@@ -123,28 +123,6 @@ func TestBackupRequiresArguments(t *testing.T) {
 	}
 }
 
-// TestScanRejectsUnsupportedOS ensures scan exits cleanly when asked to
-// run a collector that hasn't shipped yet. Phase 4a added Linux, so
-// only `unix` is checked here.
-func TestScanRejectsUnsupportedOS(t *testing.T) {
-	for _, osFlag := range []string{"unix"} {
-		t.Run(osFlag, func(t *testing.T) {
-			cmd := newRootCmd()
-			var buf bytes.Buffer
-			cmd.SetOut(&buf)
-			cmd.SetErr(&buf)
-			cmd.SetArgs([]string{"scan", "--os", osFlag, "--non-interactive"})
-			err := cmd.Execute()
-			if err == nil {
-				t.Fatalf("expected error for --os %s; got nil", osFlag)
-			}
-			if !strings.Contains(err.Error(), "not implemented") {
-				t.Errorf("error for --os %s should mention not implemented; got: %v", osFlag, err)
-			}
-		})
-	}
-}
-
 // TestScanLinuxOnNonLinuxErrors confirms the Linux collector returns
 // a clean error message when invoked off-platform (this dev mac is
 // darwin). Real Linux behavior is exercised via the parser unit tests
@@ -163,6 +141,29 @@ func TestScanLinuxOnNonLinuxErrors(t *testing.T) {
 		t.Fatal("expected error when running --os linux on non-Linux host")
 	}
 	if !strings.Contains(err.Error(), "linux collector requires linux") {
+		t.Errorf("unexpected error: %v", err)
+	}
+}
+
+// TestScanUnixOnUnsupportedHostErrors confirms the Unix collector
+// returns a useful error on hosts that aren't FreeBSD/OpenBSD/NetBSD/
+// DragonFly. macOS and Linux fall into the "unsupported" bucket from
+// this collector's perspective.
+func TestScanUnixOnUnsupportedHostErrors(t *testing.T) {
+	switch runtime.GOOS {
+	case "freebsd", "openbsd", "netbsd", "dragonfly":
+		t.Skip("running on a supported BSD; this path tests the unsupported-host guard")
+	}
+	cmd := newRootCmd()
+	var buf bytes.Buffer
+	cmd.SetOut(&buf)
+	cmd.SetErr(&buf)
+	cmd.SetArgs([]string{"scan", "--os", "unix", "--non-interactive", "--format", "json", "--out", t.TempDir()})
+	err := cmd.Execute()
+	if err == nil {
+		t.Fatal("expected error when running --os unix on unsupported host")
+	}
+	if !strings.Contains(err.Error(), "unix collector does not support") {
 		t.Errorf("unexpected error: %v", err)
 	}
 }

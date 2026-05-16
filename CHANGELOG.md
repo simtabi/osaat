@@ -244,6 +244,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   stripping, channel-aware reinstall, flatpak branch suffix, blank
   /non-ID-row skipping, AppImage extension matching (case-insensitive),
   and missing-directory tolerance.
+- Unix/BSD collector at `internal/collectors/unix`:
+  - **FreeBSD** uses `pkg query -a '%n\t%v\t%m\t%t\t%o\t%w\n'` to
+    capture name, version, maintainer, install epoch, origin, and
+    homepage. Reinstall: `pkg install -y <name>`.
+  - **OpenBSD / NetBSD / DragonflyBSD** parse `pkg_info` output via
+    regex matching `<name>-<version>  <description>`. Reinstall:
+    `pkg_add <name>`.
+  - The orchestrator dispatches on `runtime.GOOS` and surfaces a
+    "unix collector does not support <goos>" error on unsupported
+    Unix-likes (Solaris, AIX, etc.).
+- cmd/osaat/scan: `--os unix` now invokes the real Unix collector
+  instead of erroring out.
+- Per-Linux restore manifests under `internal/restore/linux_lists.go`:
+  - **apt-packages.txt** (one Debian package per line, `xargs -a ...
+    sudo apt install -y` consumption)
+  - **dnf-packages.txt** (one RPM package per line)
+  - **pacman-packages.txt** (one Arch package per line)
+  - **snap-list.txt** (one `snap install ...` per line, channel-aware)
+  - **flatpak-list.txt** (one `flatpak install ...` per line, with
+    remote + branch suffix)
+- `restore.WriteAll` now gates each Linux list on the presence of
+  records of that source — a macOS-only scan no longer leaves empty
+  `apt-packages.txt` files behind. Brewfile and mas-apps.txt
+  continue to be written unconditionally (existing behavior).
+- 14 new tests across `internal/restore` and
+  `internal/collectors/unix`, plus a Mac-only scan negative case
+  asserting no Linux files are produced.
+- CI matrix already covers `ubuntu-latest` alongside
+  `macos-latest`; the Linux collector tests run on every push.
 - `osaat backup` ships, replacing the Phase 0 stub. Two modes:
   - **Create:** `osaat backup --from <dir> --age-recipient <key>
     --out <file.tar.age>` bundles the known scan output set into a
