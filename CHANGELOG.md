@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+(Nothing yet — first set of changes after v0.1.0 will go here.)
+
+## [0.1.0] - 2026-05-17
+
+First public release. The eleven phases of the build plan land in
+one shippable binary.
+
 ### Added
 
 - Initial scaffold: Go module, Cobra subcommand skeleton (`scan`, `diff`,
@@ -305,4 +312,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   sequentially. A 300-app scan takes about 80 seconds on Apple
   Silicon. Phase 3 adds goroutines.
 
-[Unreleased]: https://github.com/simtabi/osaat/compare/v0.0.0...HEAD
+[Unreleased]: https://github.com/simtabi/osaat/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/simtabi/osaat/releases/tag/v0.1.0
