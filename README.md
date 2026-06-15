@@ -91,17 +91,31 @@ redacted, so a stolen log file doesn't identify the machine.
 
 ## Documentation
 
-- [Installation](docs/installation.md)
-- [Configuration](docs/configuration.md) — profiles, environment, paths
-- [Architecture](docs/architecture.md)
-- [Release process](docs/release.md)
-- [Migration / shipping checklist](docs/shipping-checklist.md)
-- Per-command docs:
-  [scan](docs/tools/scan.md) ·
-  [diff](docs/tools/diff.md) ·
-  [restore-help](docs/tools/restore-help.md) ·
-  [install-schedule](docs/tools/install-schedule.md) ·
-  [backup](docs/tools/backup.md)
+End-user documentation for `osaat`. Project-internal design notes live in
+[`.design/`](.design/README.md) and are not shipped with releases.
+
+| Document | What it covers |
+|---|---|
+| [Installation](docs/installation.md) | How to install on macOS, Linux, BSD |
+| [Configuration](docs/configuration.md) | Config file format, environment variables, profiles |
+| [Architecture](docs/architecture.md) | What the tool does and how it does it, at a level useful for contributors |
+| [Release process](docs/release.md) | How a release is cut and how the Homebrew tap is updated |
+| [Migration / shipping checklist](docs/shipping-checklist.md) | Step-by-step migration runbook |
+
+Per-command reference:
+
+| Command | Doc |
+|---|---|
+| `osaat scan` | [tools/scan.md](docs/tools/scan.md) |
+| `osaat diff` | [tools/diff.md](docs/tools/diff.md) |
+| `osaat restore-help` | [tools/restore-help.md](docs/tools/restore-help.md) |
+| `osaat install-schedule` | [tools/install-schedule.md](docs/tools/install-schedule.md) |
+| `osaat backup` | [tools/backup.md](docs/tools/backup.md) |
+| `bash-fallback.sh` | [tools/bash-fallback.md](docs/tools/bash-fallback.md) |
+
+Each document records its current status in its header. Documents are
+filled in as the feature they cover ships; the skeletons were created in
+Phase 0.
 
 ## License
 
