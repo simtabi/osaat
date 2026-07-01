@@ -42,4 +42,4 @@ snapshot: ## Build release artifacts locally (requires goreleaser)
 	goreleaser release --snapshot --clean
 
 clean: ## Clean build artifacts
-	rm -rf ./bin ./dist coverage.out
+	rm -rf ./bin ./dist ./build/dist coverage.out

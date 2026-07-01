@@ -1,52 +1,75 @@
 version: 2
-
 project_name: osaat
+
+# Keep all build tooling under a single build/ folder: inputs (targets.txt) at
+# build/ root, generated artifacts under build/dist/ (gitignored).
+dist: build/dist
 
 before:
   hooks:
     - go mod tidy
 
+# One pure-Go binary cross-compiled to the full OS/arch matrix. CGO is disabled
+# so every target is a static, portable binary; -trimpath makes builds
+# reproducible and -s -w strips debug info for smaller artifacts.
 builds:
   - id: osaat
     main: ./cmd/osaat
     binary: osaat
     env:
       - CGO_ENABLED=0
+    flags:
+      - -trimpath
     goos:
       - darwin
       - linux
       - windows
       - freebsd
     goarch:
-      - amd64
-      - arm64
-      - "386"
-      - arm
+      - amd64 # 64-bit x86
+      - arm64 # 64-bit ARM (Apple silicon, Graviton, RPi 64-bit)
+      - "386" # 32-bit x86
+      - arm # 32-bit ARM (RPi, etc.)
     goarm:
       - "7"
     # Skip tuples Go does not support or where the user base is
     # effectively zero. Darwin dropped 32-bit support; Windows/FreeBSD
     # 32-bit ARM never had meaningful adoption for desktop tools.
     ignore:
-      - goos: darwin
-        goarch: "386"
-      - goos: darwin
-        goarch: arm
-      - goos: windows
-        goarch: arm
-      - goos: freebsd
-        goarch: arm
+      - { goos: darwin, goarch: "386" }
+      - { goos: darwin, goarch: arm }
+      - { goos: windows, goarch: arm }
+      - { goos: freebsd, goarch: arm }
+    mod_timestamp: "{{ .CommitTimestamp }}"
     ldflags:
       - -s -w
-      - -X github.com/simtabi/osaat/internal/version.Version={{.Version}}
-      - -X github.com/simtabi/osaat/internal/version.Commit={{.Commit}}
-      - -X github.com/simtabi/osaat/internal/version.Date={{.Date}}
+      - -X github.com/simtabi/osaat/internal/version.Version={{ .Version }}
+      - -X github.com/simtabi/osaat/internal/version.Commit={{ .Commit }}
+      - -X github.com/simtabi/osaat/internal/version.Date={{ .CommitDate }}
 
+# A single macOS universal binary (amd64 + arm64) alongside the per-arch ones.
+universal_binaries:
+  - id: osaat
+    ids: [osaat]
+    name_template: osaat
+    replace: false
+
+# All artifacts use one flat, versionless, Go-style naming scheme:
+#   osaat_<os>_<arch>[.ext]  with darwin → macos, e.g.
+#   osaat_macos_arm64, osaat_linux_amd64, osaat_windows_386.exe,
+#   osaat_macos_universal, osaat_linux_armv7, osaat_freebsd_amd64.
+# The release tag carries the version. install scripts reconstruct these names.
 archives:
-  - id: default
-    name_template: >-
-      osaat_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}
-    formats: [tar.gz]
+  - id: binary
+    ids: [osaat]
+    formats: [binary]
+    name_template: &name >-
+      osaat_{{- if eq .Os "darwin" }}macos{{ else }}{{ .Os }}{{ end }}_
+      {{- if eq .Arch "all" }}universal{{ else if eq .Arch "arm" }}armv{{ .Arm }}{{ else }}{{ .Arch }}{{ end }}
+
+  - id: archive
+    ids: [osaat]
+    name_template: *name
     format_overrides:
       - goos: windows
         formats: [zip]
@@ -55,46 +78,105 @@ archives:
       - README.md
       - CHANGELOG.md
 
+# Native Linux packages (nfpm operates on the Linux builds only).
+nfpms:
+  - id: osaat
+    ids: [osaat]
+    package_name: osaat
+    vendor: Simtabi LLC
+    homepage: "https://opensource.simtabi.com/products/osaat"
+    maintainer: "Imani Manyara <imani@simtabi.com>"
+    description: "Audit and back up installed applications on macOS, Linux, and Unix."
+    license: MIT
+    formats: [deb, rpm, apk]
+    bindir: /usr/bin
+    file_name_template: 'osaat_linux_{{ if eq .Arch "arm" }}armv{{ .Arm }}{{ else }}{{ .Arch }}{{ end }}'
+
 checksum:
   name_template: "checksums.txt"
   algorithm: sha256
 
+# Reproducible source tarball, uploaded as a first-class release asset next to
+# GitHub's auto-generated "Source code" links, so every release ships the exact
+# code as well as the binaries.
+source:
+  enabled: true
+  name_template: "{{ .ProjectName }}_{{ .Version }}_source"
+
+# One SBOM per archive (syft, SPDX-JSON), attached as release assets so
+# consumers can audit the supply chain of what they download.
+sboms:
+  - id: archive
+    artifacts: archive
+
 snapshot:
   version_template: "{{ .Version }}-snapshot+{{ .ShortCommit }}"
 
-changelog:
-  use: github
-  sort: asc
-  filters:
-    exclude:
-      - "^docs:"
-      - "^test:"
-      - "^ci:"
-      - "^chore:"
-      - Merge pull request
-      - Merge branch
+homebrew_casks:
+  - name: osaat
+    ids: [archive]
+    repository:
+      owner: simtabi
+      name: homebrew-tap
+      token: "{{ .Env.TAP_GITHUB_TOKEN }}"
+    directory: Casks
+    homepage: "https://opensource.simtabi.com/products/osaat"
+    description: "Audit and back up installed applications on macOS, Linux, and Unix."
+    hooks:
+      post:
+        install: |
+          if OS.mac?
+            system_command "/usr/bin/xattr",
+              args: ["-dr", "com.apple.quarantine", "#{staged_path}/osaat"],
+              sudo: false
+          end
+
+scoops:
+  - name: osaat
+    ids: [archive]
+    repository:
+      owner: simtabi
+      name: scoop-bucket
+      token: "{{ .Env.TAP_GITHUB_TOKEN }}"
+    directory: bucket
+    homepage: "https://opensource.simtabi.com/products/osaat"
+    description: "Audit and back up installed applications on macOS, Linux, and Unix."
+    license: MIT
+    skip_upload: '{{ envOrDefault "SKIP_WINDOWS_PKGS" "true" }}'
+
+# Winget (Microsoft's default Windows package manager). Publishes a manifest to
+# a simtabi/winget-pkgs fork and opens a PR to microsoft/winget-pkgs. Package id
+# is Simtabi.osaat. Gated behind SKIP_WINDOWS_PKGS until the fork exists.
+winget:
+  - name: osaat
+    publisher: Simtabi
+    ids: [archive]
+    license: MIT
+    homepage: "https://opensource.simtabi.com/products/osaat"
+    short_description: "Audit and back up installed applications on macOS, Linux, and Unix."
+    description: "Audit and back up installed applications on macOS, Linux, and Unix."
+    publisher_url: "https://simtabi.com"
+    release_notes_url: "https://github.com/simtabi/osaat/releases/tag/{{ .Tag }}"
+    repository:
+      owner: simtabi
+      name: winget-pkgs
+      branch: "osaat-{{ .Version }}"
+      token: "{{ .Env.TAP_GITHUB_TOKEN }}"
+      pull_request:
+        enabled: true
+        draft: false
+        base:
+          owner: microsoft
+          name: winget-pkgs
+          branch: master
+    skip_upload: '{{ envOrDefault "SKIP_WINDOWS_PKGS" "true" }}'
 
 release:
-  draft: false
-  prerelease: auto
   github:
     owner: simtabi
     name: osaat
+  draft: false
+  prerelease: auto
 
-# Homebrew tap publishing is enabled in Phase 5 once the
-# simtabi/homebrew-tap repository exists and TAP_GITHUB_TOKEN is set
-# in this repo's Actions secrets. See docs/release.md.
-#
-# brews:
-#   - name: osaat
-#     repository:
-#       owner: simtabi
-#       name: homebrew-tap
-#       token: "{{ .Env.TAP_GITHUB_TOKEN }}"
-#     homepage: https://opensource.simtabi.com/products/osaat
-#     description: "Audit and back up installed applications on macOS, Linux, and Unix."
-#     license: MIT
-#     install: |
-#       bin.install "osaat"
-#     test: |
-#       system "#{bin}/osaat", "version"
+changelog:
+  disable: true # release body comes from CHANGELOG.md via --release-notes

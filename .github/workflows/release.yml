@@ -1,37 +1,66 @@
 name: Release
 
+# Every release is tag-driven and publishes BOTH the source code and the
+# binaries: GoReleaser cross-compiles the full matrix, builds the archives,
+# packages, and a reproducible source tarball, generates SBOMs and checksums,
+# creates the GitHub Release (body from the tagged CHANGELOG section), and
+# updates the Homebrew/Scoop/Winget manifests. A build-provenance attestation is
+# then signed for every artifact via the checksums file.
 on:
   push:
-    tags:
-      - "v*"
+    tags: ["v*"]
+
+# Releases must never be cancelled mid-publish by a newer tag.
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
 
 permissions:
-  contents: write
-  packages: write
-  id-token: write
+  contents: read
 
 jobs:
   goreleaser:
-    name: goreleaser
+    # Linux cross-compiles every target (pure Go) and builds the native
+    # deb/rpm/apk packages, so one ubuntu runner produces the full matrix.
     runs-on: ubuntu-latest
+    environment: release
+    timeout-minutes: 30
+    permissions:
+      contents: write # create the release and upload assets
+      id-token: write # keyless signing for the provenance attestation
+      attestations: write # write the build-provenance attestation
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:
-          fetch-depth: 0
+          fetch-depth: 0 # full history + tags for GoReleaser
 
-      - uses: actions/setup-go@v6
+      - uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff # v5
         with:
-          go-version: "1.25"
+          go-version-file: go.mod
           cache: true
 
-      - uses: goreleaser/goreleaser-action@v7
+      # syft powers GoReleaser's SBOM generation.
+      - uses: anchore/sbom-action/download-syft@e22c389904149dbc22b58101806040fa8d37a610 # v0
+
+      - name: Extract CHANGELOG section for this tag
+        run: ./scripts/extract-changelog.sh "${GITHUB_REF_NAME}" > release_notes.md
+
+      - name: Run GoReleaser
+        uses: goreleaser/goreleaser-action@e435ccd777264be153ace6237001ef4d979d3a7a # v6
         with:
-          distribution: goreleaser
           version: latest
-          args: release --clean
+          args: release --clean --release-notes=release_notes.md
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          # TAP_GITHUB_TOKEN: enables Homebrew tap publishing once the
-          # `simtabi/homebrew-tap` repo exists and the secret is set on
-          # this repo's Actions secrets. See docs/release.md.
           TAP_GITHUB_TOKEN: ${{ secrets.TAP_GITHUB_TOKEN }}
+          # Scoop/Winget publishing is skipped until the bucket/fork exist. Set
+          # repo variable SKIP_WINDOWS_PKGS to "false" to enable it.
+          SKIP_WINDOWS_PKGS: ${{ vars.SKIP_WINDOWS_PKGS || 'true' }}
+
+      # Sign a build-provenance attestation for every released artifact. The
+      # checksums file lists them all, so `gh attestation verify <file>
+      # --repo <owner>/<repo>` works for any downloaded binary or archive.
+      - name: Attest build provenance
+        uses: actions/attest-build-provenance@e8998f949152b193b063cb0ec769d69d929409be # v2
+        with:
+          subject-checksums: build/dist/checksums.txt
