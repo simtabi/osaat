@@ -23,8 +23,8 @@ Phase 0; that tree is separate from this one.
 - Language: Go 1.22+, single static binary per platform.
 - Owner: Simtabi LLC. License: MIT.
 - Canonical URLs:
-  - Product: <https://opensource.simtabi.com/products/osaat>
-  - Docs: <https://opensource.simtabi.com/documentation/osaat>
+  - Product: <https://opensource.simtabi.com/products/simtabi/osaat>
+  - Docs: <https://opensource.simtabi.com/documentation/simtabi/osaat/>
   - Repo: <https://github.com/simtabi/osaat>
   - Issues: <https://github.com/simtabi/osaat/issues>
 
