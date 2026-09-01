@@ -2,7 +2,7 @@
 
 ## Reporting a vulnerability
 
-Email <opensource@simtabi.com> with a description of the issue and any
+Email <security@simtabi.com> with a description of the issue and any
 reproduction steps. Please do not open a public issue or a public
 discussion for security reports.
 
