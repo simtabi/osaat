@@ -121,7 +121,7 @@ func (m *ScanModel) View() string {
 	if len(m.counts) > 0 {
 		sb.WriteString("\n")
 		for _, c := range m.counts {
-			sb.WriteString(fmt.Sprintf("  %-20s %d\n", c.key, c.count))
+			_, _ = fmt.Fprintf(&sb, "  %-20s %d\n", c.key, c.count)
 		}
 	}
 

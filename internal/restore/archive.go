@@ -162,7 +162,7 @@ func LoadIdentitiesFromFile(path string) ([]age.Identity, error) {
 	if err != nil {
 		return nil, fmt.Errorf("open %s: %w", path, err)
 	}
-	defer f.Close()
+	defer func() { _ = f.Close() }() // read-only: a close error loses nothing
 	ids, err := age.ParseIdentities(f)
 	if err != nil {
 		return nil, fmt.Errorf("parse identities from %s: %w", path, err)
@@ -217,14 +217,14 @@ func addFileToTar(tw *tar.Writer, srcDir, name string) error {
 	if err != nil {
 		return fmt.Errorf("open %s: %w", full, err)
 	}
-	defer f.Close()
+	defer func() { _ = f.Close() }() // read-only
 	if _, err := io.Copy(tw, f); err != nil {
 		return fmt.Errorf("tar copy %s: %w", name, err)
 	}
 	return nil
 }
 
-func writeFromTar(tr *tar.Reader, outPath string, mode os.FileMode) error {
+func writeFromTar(tr *tar.Reader, outPath string, mode os.FileMode) (err error) {
 	if mode == 0 {
 		mode = 0o644
 	}
@@ -232,7 +232,12 @@ func writeFromTar(tr *tar.Reader, outPath string, mode os.FileMode) error {
 	if err != nil {
 		return fmt.Errorf("create %s: %w", outPath, err)
 	}
-	defer out.Close()
+	// A failed close on a written file can mean the data never reached disk: report it.
+	defer func() {
+		if cerr := out.Close(); cerr != nil && err == nil {
+			err = fmt.Errorf("close %s: %w", outPath, cerr)
+		}
+	}()
 	if _, err := io.Copy(out, tr); err != nil {
 		return fmt.Errorf("write %s: %w", outPath, err)
 	}

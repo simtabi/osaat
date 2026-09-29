@@ -49,7 +49,7 @@ interactive wizard. Otherwise it runs headlessly with the flag values.`,
 // RunE with real logic in a later phase.
 func stubRun(name string) func(*cobra.Command, []string) error {
 	return func(cmd *cobra.Command, _ []string) error {
-		fmt.Fprintf(cmd.OutOrStdout(), "[%s] not implemented yet — see .design/plans/ for the build plan\n", name)
+		_, _ = fmt.Fprintf(cmd.OutOrStdout(), "[%s] not implemented yet — see .design/plans/ for the build plan\n", name)
 		return nil
 	}
 }

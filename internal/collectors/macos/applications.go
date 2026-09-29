@@ -134,7 +134,7 @@ func readInfoPlist(path string) (infoPlist, error) {
 	if err != nil {
 		return infoPlist{}, err
 	}
-	defer f.Close()
+	defer func() { _ = f.Close() }() // read-only
 
 	var raw map[string]any
 	if err := plist.NewDecoder(f).Decode(&raw); err != nil {

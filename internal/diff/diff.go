@@ -148,7 +148,7 @@ func LoadReport(path string) ([]audit.AppRecord, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer f.Close()
+	defer func() { _ = f.Close() }() // read-only
 
 	var rep reportFile
 	if err := json.NewDecoder(f).Decode(&rep); err != nil {
