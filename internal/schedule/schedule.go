@@ -13,7 +13,6 @@ import (
 	"os"
 	"runtime"
 	"strings"
-	"time"
 )
 
 // Cadence is how often the scheduled scan should run.
@@ -141,12 +140,4 @@ func scheduleTime(c Cadence) (weekday, dayOfMonth int) {
 // scheduled run produces a per-day directory.
 func defaultOutDir(home string) string {
 	return strings.TrimRight(home, "/") + "/Documents/osaat/{date}"
-}
-
-// expandTime is a no-op for now — the scheduler doesn't expand
-// {date}; the scan binary does at invocation time. The function
-// exists so future enhancements (e.g. expanding template fields in
-// the binary path) have a single hook.
-func expandTime(s string, _ time.Time) string {
-	return s
 }

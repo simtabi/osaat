@@ -99,13 +99,6 @@ func intIfNonZero(n int64) string {
 	return strconv.FormatInt(n, 10)
 }
 
-func timeIfNonZero(t time.Time) string {
-	if t.IsZero() {
-		return ""
-	}
-	return t.UTC().Format(time.RFC3339)
-}
-
 // timePtrString formats a *time.Time as RFC 3339 UTC, or "" when nil.
 func timePtrString(t *time.Time) string {
 	if t == nil {

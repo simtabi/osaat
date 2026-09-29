@@ -81,18 +81,21 @@ func runBackupCreate(cmd *cobra.Command, _ ...string) error {
 	if err != nil {
 		return fmt.Errorf("create %s: %w", out, err)
 	}
-	defer f.Close()
-
 	if err := restore.WriteArchive(f, restore.ArchiveOptions{
 		SourceDir:     from,
 		Recipients:    recipients,
 		IncludeExtras: includeExtras,
 	}); err != nil {
+		_ = f.Close()
 		return err
+	}
+	// Close before reporting success: a failed close can mean the archive never reached disk.
+	if err := f.Close(); err != nil {
+		return fmt.Errorf("close %s: %w", out, err)
 	}
 
 	if !quiet {
-		fmt.Fprintf(cmd.OutOrStdout(), "wrote %s\n", paths.TidyPath(out))
+		_, _ = fmt.Fprintf(cmd.OutOrStdout(), "wrote %s\n", paths.TidyPath(out))
 	}
 	return nil
 }
@@ -123,7 +126,7 @@ func runBackupDecrypt(cmd *cobra.Command) error {
 	if err != nil {
 		return fmt.Errorf("open %s: %w", in, err)
 	}
-	defer f.Close()
+	defer func() { _ = f.Close() }() // read-only
 
 	written, err := restore.DecryptArchive(f, out, identities)
 	if err != nil {
@@ -131,7 +134,7 @@ func runBackupDecrypt(cmd *cobra.Command) error {
 	}
 	if !quiet {
 		for _, p := range written {
-			fmt.Fprintf(cmd.OutOrStdout(), "wrote %s\n", paths.TidyPath(p))
+			_, _ = fmt.Fprintf(cmd.OutOrStdout(), "wrote %s\n", paths.TidyPath(p))
 		}
 	}
 	return nil

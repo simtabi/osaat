@@ -150,7 +150,7 @@ func validateName(name string) error {
 		return errors.New("profile name is empty")
 	}
 	if strings.ContainsAny(name, "/\\:") {
-		return fmt.Errorf("profile name %q must not contain / \\ or :", name)
+		return fmt.Errorf("profile name %q must not contain a slash, backslash or colon", name)
 	}
 	if name == "." || name == ".." {
 		return fmt.Errorf("profile name %q is not allowed", name)

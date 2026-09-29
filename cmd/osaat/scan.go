@@ -138,7 +138,7 @@ func runScan(cmd *cobra.Command, _ []string) error {
 	logger.Info("starting scan", "os", in.OS, "out", in.Out)
 
 	if !in.Interactive && !in.Quiet {
-		fmt.Fprintf(cmd.OutOrStdout(), "Scanning... outputs will land in %s\n", paths.TidyPath(in.Out))
+		_, _ = fmt.Fprintf(cmd.OutOrStdout(), "Scanning... outputs will land in %s\n", paths.TidyPath(in.Out))
 	}
 
 	records, scanErr := collector.Collect(ctx)
@@ -177,7 +177,7 @@ func runScan(cmd *cobra.Command, _ []string) error {
 		for _, p := range paths {
 			written = append(written, p)
 			if !in.Quiet {
-				fmt.Fprintf(cmd.OutOrStdout(), "wrote %s\n", p)
+				_, _ = fmt.Fprintf(cmd.OutOrStdout(), "wrote %s\n", p)
 			}
 		}
 	}
@@ -194,7 +194,7 @@ func runScan(cmd *cobra.Command, _ []string) error {
 			}
 			written = append(written, path)
 			if !in.Quiet {
-				fmt.Fprintf(cmd.OutOrStdout(), "wrote %s\n", path)
+				_, _ = fmt.Fprintf(cmd.OutOrStdout(), "wrote %s\n", path)
 			}
 		} else {
 			logger.Info("license scan produced no findings; nothing to write")
@@ -206,7 +206,7 @@ func runScan(cmd *cobra.Command, _ []string) error {
 	if err != nil {
 		logger.Warn("could not write checksums file", "err", err)
 	} else if !in.Quiet {
-		fmt.Fprintf(cmd.OutOrStdout(), "wrote %s\n", checksumPath)
+		_, _ = fmt.Fprintf(cmd.OutOrStdout(), "wrote %s\n", checksumPath)
 	}
 
 	// Optional profile save (always when wizard set SaveProfile).
@@ -215,14 +215,14 @@ func runScan(cmd *cobra.Command, _ []string) error {
 		if err != nil {
 			logger.Warn("could not save profile", "name", in.SaveProfile, "err", err)
 		} else if !in.Quiet {
-			fmt.Fprintf(cmd.OutOrStdout(), "saved profile to %s\n", paths.TidyPath(path))
+			_, _ = fmt.Fprintf(cmd.OutOrStdout(), "saved profile to %s\n", paths.TidyPath(path))
 		}
 	}
 
 	if in.Interactive && !in.Quiet {
-		fmt.Fprintln(cmd.OutOrStdout())
-		fmt.Fprintln(cmd.OutOrStdout(), "Run this scan headlessly next time:")
-		fmt.Fprintln(cmd.OutOrStdout(), "  "+wizard.ReplayCommand(optionsFromInputs(in)))
+		_, _ = fmt.Fprintln(cmd.OutOrStdout())
+		_, _ = fmt.Fprintln(cmd.OutOrStdout(), "Run this scan headlessly next time:")
+		_, _ = fmt.Fprintln(cmd.OutOrStdout(), "  "+wizard.ReplayCommand(optionsFromInputs(in)))
 	}
 
 	return nil
@@ -369,7 +369,7 @@ func writeReports(cmd *cobra.Command, in scanInputs, records []audit.AppRecord) 
 		}
 		written = append(written, outPath)
 		if !in.Quiet {
-			fmt.Fprintf(cmd.OutOrStdout(), "wrote %s\n", outPath)
+			_, _ = fmt.Fprintf(cmd.OutOrStdout(), "wrote %s\n", outPath)
 		}
 	}
 	return written, nil
@@ -386,9 +386,12 @@ func writeSecrets(sec *secrets.File, outDir, recipient string) (string, error) {
 		if err != nil {
 			return "", fmt.Errorf("create %s: %w", path, err)
 		}
-		defer f.Close()
 		if err := secrets.WriteJSON(sec, f); err != nil {
+			_ = f.Close()
 			return "", fmt.Errorf("write %s: %w", path, err)
+		}
+		if err := f.Close(); err != nil {
+			return "", fmt.Errorf("close %s: %w", path, err)
 		}
 		return path, nil
 	}
@@ -398,22 +401,30 @@ func writeSecrets(sec *secrets.File, outDir, recipient string) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("create %s: %w", path, err)
 	}
-	defer f.Close()
 	if err := secrets.WriteEncrypted(sec, []string{recipient}, f); err != nil {
+		_ = f.Close()
 		return "", fmt.Errorf("encrypt %s: %w", path, err)
+	}
+	if err := f.Close(); err != nil {
+		return "", fmt.Errorf("close %s: %w", path, err)
 	}
 	return path, nil
 }
 
 // writeChecksums emits a sha256sum-compatible file at
 // <outDir>/SHA256SUMS containing the digest of every written file.
-func writeChecksums(outDir string, files []string) (string, error) {
+func writeChecksums(outDir string, files []string) (_ string, err error) {
 	checksumPath := filepath.Join(outDir, "SHA256SUMS")
 	out, err := os.Create(checksumPath)
 	if err != nil {
 		return "", err
 	}
-	defer out.Close()
+	// A failed close on a written file can mean the checksums never reached disk: report it.
+	defer func() {
+		if cerr := out.Close(); cerr != nil && err == nil {
+			err = cerr
+		}
+	}()
 
 	for _, p := range files {
 		digest, err := fileSHA256(p)
@@ -433,7 +444,7 @@ func fileSHA256(path string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	defer f.Close()
+	defer func() { _ = f.Close() }() // read-only
 	h := sha256.New()
 	if _, err := io.Copy(h, f); err != nil {
 		return "", err

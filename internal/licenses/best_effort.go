@@ -160,7 +160,7 @@ func (s *BestEffortScanner) scanPlistFile(r audit.AppRecord, path string) []secr
 	if err != nil {
 		return nil
 	}
-	defer f.Close()
+	defer func() { _ = f.Close() }() // read-only
 
 	var raw map[string]any
 	if err := plist.NewDecoder(f).Decode(&raw); err != nil {

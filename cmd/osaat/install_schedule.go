@@ -132,20 +132,20 @@ func pickCadence(cmd *cobra.Command) (schedule.Cadence, error) {
 func printPlan(cmd *cobra.Command, plan schedule.Plan) {
 	w := cmd.OutOrStdout()
 	if plan.DryRun {
-		fmt.Fprintln(w, "Dry run — no changes made.")
+		_, _ = fmt.Fprintln(w, "Dry run — no changes made.")
 	}
 	for _, a := range plan.Actions {
 		switch a.Kind {
 		case "write":
-			fmt.Fprintf(w, "write   %s  (mode %o, %d bytes)\n", paths.TidyPath(a.Path), a.Mode, len(a.Body))
+			_, _ = fmt.Fprintf(w, "write   %s  (mode %o, %d bytes)\n", paths.TidyPath(a.Path), a.Mode, len(a.Body))
 		case "remove":
-			fmt.Fprintf(w, "remove  %s\n", paths.TidyPath(a.Path))
+			_, _ = fmt.Fprintf(w, "remove  %s\n", paths.TidyPath(a.Path))
 		case "load":
-			fmt.Fprintf(w, "load    %s\n", a.Path)
+			_, _ = fmt.Fprintf(w, "load    %s\n", a.Path)
 		case "unload":
-			fmt.Fprintf(w, "unload  %s\n", a.Path)
+			_, _ = fmt.Fprintf(w, "unload  %s\n", a.Path)
 		default:
-			fmt.Fprintf(w, "%-7s %s\n", a.Kind, a.Path)
+			_, _ = fmt.Fprintf(w, "%-7s %s\n", a.Kind, a.Path)
 		}
 	}
 }
