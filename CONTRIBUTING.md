@@ -19,7 +19,7 @@ make test
 
 You need:
 
-- Go 1.22 or newer
+- Go 1.25 or newer
 - `make`
 - `golangci-lint` for `make lint` (optional for development; required in CI)
 - `goreleaser` for `make snapshot` (optional)
