@@ -14,7 +14,7 @@ The tap is configured automatically on first install.
 go install github.com/simtabi/osaat/cmd/osaat@latest
 ```
 
-Requires Go 1.24 or newer.
+Requires Go 1.25 or newer.
 
 ## Direct binary
 
