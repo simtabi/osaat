@@ -31,7 +31,19 @@ where Go and Homebrew aren't installed yet, use
 JSON report compatible with the Go binary's schema. See
 [docs/tools/bash-fallback.md](docs/tools/bash-fallback.md).
 
-## Quick start
+## Quick start guide and usage
+
+### Getting started
+
+Nothing to configure: defaults (including OS-aware output paths) are baked into the binary.
+Confirm the install with:
+
+```sh
+osaat version
+osaat --help
+```
+
+### Usage
 
 ```sh
 # Interactive wizard — auto-opens when stdin is a TTY and no flags are passed
@@ -44,6 +56,12 @@ osaat scan --os macos --format pdf,markdown,txt,json --out ~/backup/
 The wizard collects every setting, runs the scan, and prints the
 equivalent non-interactive command at the end. Wizard answers can be
 saved as named profiles (`osaat scan --profile <name>`).
+
+Compare two reports, for example before and after a migration:
+
+```sh
+osaat diff ~/backup/old-mac/report.json ~/backup/new-mac/report.json
+```
 
 ## What gets captured
 
