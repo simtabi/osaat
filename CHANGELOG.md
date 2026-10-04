@@ -302,15 +302,18 @@ one shippable binary.
 
 ### Known limitations (deferred)
 
-- The bubbletea ScanModel exists but does not yet receive per-app
-  progress events from the macOS collector — the collector runs to
-  completion in one go and emits only phase-boundary log entries.
-  Phase 3 wires per-app updates alongside the concurrency pass.
-- Linux / Unix collectors return a "not implemented yet" error;
-  Phase 4.
-- No concurrency in the Go collector: per-app commands run
-  sequentially. A 300-app scan takes about 80 seconds on Apple
-  Silicon. Phase 3 adds goroutines.
+Corrected 2026-10-04: this section was written mid-build and still listed the Linux/Unix
+collectors as unimplemented and the macOS collector as sequential, though both shipped in 0.1.0
+(the collectors are under `internal/collectors/{linux,unix}`; the macOS collector runs a worker
+pool). What was still deferred at 0.1.0, checked against the code:
+
+- The live scan view receives only phase-boundary events, not one per app, so it cannot show the
+  app currently being scanned.
+- Linux "forgotten apps" by file access time is a no-op stub (`internal/collectors/linux/linux.go`).
+- No `.desktop`-file enrichment (name, URL, icon) on Linux, and no pkgsrc/NetBSD collector; the
+  BSD collectors cover FreeBSD `pkg` and OpenBSD `pkg_info`.
+- `security dump-keychain` is not integrated; the aggressive license scan only points at it
+  (`internal/licenses/aggressive.go`).
 
 [Unreleased]: https://github.com/simtabi/osaat/compare/v0.1.0...HEAD
 [0.1.0]: https://github.com/simtabi/osaat/releases/tag/v0.1.0
