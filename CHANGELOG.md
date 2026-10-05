@@ -7,13 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.1] - 2026-10-05
+
+The first published release. `v0.1.0` was tagged, but its release run failed before building
+anything, so no 0.1.0 binaries, packages or Homebrew cask exist. 0.1.1 ships the same code as
+0.1.0 plus the fix below; the 0.1.0 section that follows describes what this release contains.
+
 ### Fixed
 
 - The release workflow wrote the extracted release notes into the repository root, which left
   the tree dirty, so GoReleaser refused to build and the `v0.1.0` tag produced no release. The
   notes now go to the runner's temporary directory.
-
-(Nothing yet — first set of changes after v0.1.0 will go here.)
 
 ## [0.1.0] - 2026-10-05
 
@@ -321,5 +325,6 @@ pool). What was still deferred at 0.1.0, checked against the code:
 - `security dump-keychain` is not integrated; the aggressive license scan only points at it
   (`internal/licenses/aggressive.go`).
 
-[Unreleased]: https://github.com/simtabi/osaat/compare/v0.1.0...HEAD
-[0.1.0]: https://github.com/simtabi/osaat/releases/tag/v0.1.0
+[Unreleased]: https://github.com/simtabi/osaat/compare/v0.1.1...HEAD
+[0.1.1]: https://github.com/simtabi/osaat/releases/tag/v0.1.1
+[0.1.0]: https://github.com/simtabi/osaat/tree/v0.1.0
