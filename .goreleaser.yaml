@@ -187,5 +187,9 @@ release:
   draft: false
   prerelease: auto
 
+# The release body comes from CHANGELOG.md via --release-notes (see release.yml).
+# Do NOT set `disable: true` here: GoReleaser documents that it also ignores the
+# --release-notes file and renders an empty body, which is what v0.1.1 shipped with.
+# With --release-notes given, GoReleaser uses that file and generates nothing itself.
 changelog:
-  disable: true # release body comes from CHANGELOG.md via --release-notes
+  use: git

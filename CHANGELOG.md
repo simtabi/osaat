@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Releases published with an empty description. `.goreleaser.yaml` set `changelog.disable: true`,
+  which GoReleaser documents as also ignoring the `--release-notes` file. The setting is gone, so
+  the release body is the tagged version's CHANGELOG section again.
+
 ## [0.1.1] - 2026-10-05
 
 The first published release. `v0.1.0` was tagged, but its release run failed before building
