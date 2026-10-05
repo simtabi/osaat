@@ -43,7 +43,10 @@ jobs:
       - uses: anchore/sbom-action/download-syft@66cbf4bc1f1c0d2edc94016e65bc221b6bb0ad6c # v0.24.3
 
       - name: Extract CHANGELOG section for this tag
-        run: ./scripts/extract-changelog.sh "${GITHUB_REF_NAME}" > release_notes.md
+        # Written outside the checkout: GoReleaser refuses to release from a dirty tree,
+        # and an untracked release_notes.md in the repo root is exactly that (the
+        # v0.1.0 tag failed on it). A snapshot build skips that check, so it never showed.
+        run: ./scripts/extract-changelog.sh "${GITHUB_REF_NAME}" > "${RUNNER_TEMP}/release_notes.md"
 
       # The Homebrew tap and Scoop bucket only accept changes through a pull
       # request, so GoReleaser pushes a branch there and opens one. GITHUB_TOKEN
@@ -67,7 +70,7 @@ jobs:
         uses: goreleaser/goreleaser-action@f06c13b6b1a9625abc9e6e439d9c05a8f2190e94 # v7.2.3
         with:
           version: latest
-          args: release --clean --release-notes=release_notes.md
+          args: release --clean --release-notes=${{ runner.temp }}/release_notes.md
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAP_GITHUB_TOKEN: ${{ steps.tap.outputs.token }}
