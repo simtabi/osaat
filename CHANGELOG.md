@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- The release workflow wrote the extracted release notes into the repository root, which left
+  the tree dirty, so GoReleaser refused to build and the `v0.1.0` tag produced no release. The
+  notes now go to the runner's temporary directory.
+
 (Nothing yet — first set of changes after v0.1.0 will go here.)
 
 ## [0.1.0] - 2026-10-05
