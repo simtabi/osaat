@@ -84,7 +84,7 @@ nfpms:
     ids: [osaat]
     package_name: osaat
     vendor: Simtabi LLC
-    homepage: "https://opensource.simtabi.com/products/osaat"
+    homepage: "https://opensource.simtabi.com/products/simtabi/osaat"
     maintainer: "Imani Manyara <imani@simtabi.com>"
     description: "Audit and back up installed applications on macOS, Linux, and Unix."
     license: MIT
@@ -119,8 +119,13 @@ homebrew_casks:
       owner: simtabi
       name: homebrew-tap
       token: "{{ .Env.TAP_GITHUB_TOKEN }}"
+      # The tap's default branch requires a pull request, so push a branch and
+      # open one against it instead of committing to main.
+      branch: "osaat-{{ .Version }}"
+      pull_request:
+        enabled: true
     directory: Casks
-    homepage: "https://opensource.simtabi.com/products/osaat"
+    homepage: "https://opensource.simtabi.com/products/simtabi/osaat"
     description: "Audit and back up installed applications on macOS, Linux, and Unix."
     hooks:
       post:
@@ -138,8 +143,12 @@ scoops:
       owner: simtabi
       name: scoop-bucket
       token: "{{ .Env.TAP_GITHUB_TOKEN }}"
+      # Same pull-request-only rule as the tap.
+      branch: "osaat-{{ .Version }}"
+      pull_request:
+        enabled: true
     directory: bucket
-    homepage: "https://opensource.simtabi.com/products/osaat"
+    homepage: "https://opensource.simtabi.com/products/simtabi/osaat"
     description: "Audit and back up installed applications on macOS, Linux, and Unix."
     license: MIT
     skip_upload: '{{ envOrDefault "SKIP_WINDOWS_PKGS" "true" }}'
@@ -152,7 +161,7 @@ winget:
     publisher: Simtabi
     ids: [archive]
     license: MIT
-    homepage: "https://opensource.simtabi.com/products/osaat"
+    homepage: "https://opensource.simtabi.com/products/simtabi/osaat"
     short_description: "Audit and back up installed applications on macOS, Linux, and Unix."
     description: "Audit and back up installed applications on macOS, Linux, and Unix."
     publisher_url: "https://simtabi.com"

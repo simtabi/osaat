@@ -8,7 +8,7 @@ name: Release
 # then signed for every artifact via the checksums file.
 on:
   push:
-    tags: ["v*"]
+    tags: ["v*.*.*"]
 
 # Releases must never be cancelled mid-publish by a newer tag.
 concurrency:
@@ -40,10 +40,28 @@ jobs:
           cache: true
 
       # syft powers GoReleaser's SBOM generation.
-      - uses: anchore/sbom-action/download-syft@3ad7283483fc7af8ff2b4ea19663c2d5ca935e26 # v0.24.2
+      - uses: anchore/sbom-action/download-syft@66cbf4bc1f1c0d2edc94016e65bc221b6bb0ad6c # v0.24.3
 
       - name: Extract CHANGELOG section for this tag
         run: ./scripts/extract-changelog.sh "${GITHUB_REF_NAME}" > release_notes.md
+
+      # The Homebrew tap and Scoop bucket only accept changes through a pull
+      # request, so GoReleaser pushes a branch there and opens one. GITHUB_TOKEN
+      # is scoped to this repository and cannot do that, and a PAT would be a
+      # long-lived credential; Refresh Bot mints a token for this run only,
+      # limited to the two package repositories. Both values are org-level.
+      - name: Mint a package-repository token
+        id: tap
+        uses: actions/create-github-app-token@v3
+        with:
+          client-id: ${{ vars.REFRESH_APP_CLIENT_ID }}
+          private-key: ${{ secrets.REFRESH_APP_PRIVATE_KEY }}
+          owner: simtabi
+          repositories: |
+            homebrew-tap
+            scoop-bucket
+          permission-contents: write
+          permission-pull-requests: write
 
       - name: Run GoReleaser
         uses: goreleaser/goreleaser-action@f06c13b6b1a9625abc9e6e439d9c05a8f2190e94 # v7.2.3
@@ -52,7 +70,7 @@ jobs:
           args: release --clean --release-notes=release_notes.md
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          TAP_GITHUB_TOKEN: ${{ secrets.TAP_GITHUB_TOKEN }}
+          TAP_GITHUB_TOKEN: ${{ steps.tap.outputs.token }}
           # Scoop/Winget publishing is skipped until the bucket/fork exist. Set
           # repo variable SKIP_WINDOWS_PKGS to "false" to enable it.
           SKIP_WINDOWS_PKGS: ${{ vars.SKIP_WINDOWS_PKGS || 'true' }}

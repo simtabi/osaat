@@ -1,6 +1,7 @@
 # Release process
 
-**Status:** skeleton — full body in Phase 5.
+How a tagged release is cut, what it publishes, and how the package
+managers are updated.
 
 ## Versioning
 
@@ -14,29 +15,42 @@ breaking changes; patch releases are bug fixes only.
    `## [X.Y.Z] - YYYY-MM-DD` and create a fresh `## [Unreleased]`
    section above it.
 3. Update the compare link at the bottom of `CHANGELOG.md`.
-4. Commit: `chore: release vX.Y.Z`.
-5. Tag: `git tag -a vX.Y.Z -m "Release vX.Y.Z"`.
-6. Push: `git push && git push --tags`.
+4. Land the roll through a pull request; never push to `main`.
+5. Tag the merge commit on `main` and push the tag:
+   `git tag -a vX.Y.Z -m "Release vX.Y.Z" && git push origin vX.Y.Z`.
 
-The release workflow (`.github/workflows/release.yml`) triggers on the
-tag and runs GoReleaser. Artifacts:
+The module lives at the repository root (`github.com/simtabi/osaat`), so the
+one `vX.Y.Z` tag is all `go install` needs; there is no `src/` alias tag.
 
-- Four binaries: darwin/{amd64,arm64} and linux/{amd64,arm64}
-- `checksums.txt` (SHA256)
-- A draft GitHub Release with changelog entries pulled from the
-  conventional-commit prefixes since the last tag
-- A Homebrew tap update pull request against `simtabi/homebrew-tap`
+The release workflow (`.github/workflows/release.yml`) triggers on a
+`vX.Y.Z` tag and runs GoReleaser. It publishes, from that one tag:
 
-## First-release D-list
+- Bare binaries `osaat_<os>_<arch>` and archives `osaat_<os>_<arch>.tar.gz`
+  (`.zip` on Windows) for macOS (amd64, arm64, universal), Linux (amd64,
+  arm64, 386, armv7), Windows (amd64, arm64, 386) and FreeBSD (amd64, arm64,
+  386). Names are version-less and use `macos`, not `darwin`.
+- Linux `.deb`, `.rpm` and `.apk` packages.
+- A reproducible source tarball, alongside GitHub's own source links.
+- One SPDX SBOM per archive.
+- `checksums.txt` (SHA-256, bare file names) over every asset.
+- A signed build-provenance attestation for every asset in `checksums.txt`.
+- The GitHub Release, whose body is the tagged version's `CHANGELOG.md`
+  section (`scripts/extract-changelog.sh`).
+- A pull request against `simtabi/homebrew-tap` updating `Casks/osaat.rb`.
+  The tap only accepts pull requests, so `brew install simtabi/tap/osaat`
+  serves the new version once that pull request is merged.
 
-For `v0.1.0` only:
+Scoop and Winget manifests are built but not published until the repository
+variable `SKIP_WINDOWS_PKGS` is set to `false`; Winget also needs a
+`simtabi/winget-pkgs` fork.
 
-1. Make `simtabi/osaat` public on GitHub.
-2. Create `simtabi/homebrew-tap` repo if it doesn't exist.
-3. Mint a fine-grained PAT with `Contents: write` on the tap and add it
-   as `TAP_GITHUB_TOKEN` in this repo's Actions secrets.
-4. Uncomment the `brews:` block in `.goreleaser.yaml`.
-5. Cut `v0.1.0`.
+## Credentials
+
+No long-lived token is stored for the release. The workflow mints a
+per-run token from the Refresh Bot GitHub App, limited to
+`simtabi/homebrew-tap` and `simtabi/scoop-bucket` with contents and pull
+request write access, from the org-level `REFRESH_APP_CLIENT_ID` variable and
+`REFRESH_APP_PRIVATE_KEY` secret. The release itself uses `GITHUB_TOKEN`.
 
 ## Trusted publishing (PyPI / npm / etc.)
 

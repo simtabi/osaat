@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 (Nothing yet — first set of changes after v0.1.0 will go here.)
 
-## [0.1.0] - 2026-05-17
+## [0.1.0] - 2026-10-05
 
 First public release. The eleven phases of the build plan land in
 one shippable binary.
