@@ -29,11 +29,25 @@ Every release ships these architectures:
 | Windows | `amd64`, `arm64`, `386` |
 | FreeBSD | `amd64`, `arm64`, `386` |
 
-Archive names follow `osaat_<version>_<os>_<arch>.tar.gz` (or `.zip` for
-Windows). ARM 32-bit builds carry a `v7` suffix
-(`..._linux_armv7.tar.gz`).
+Asset names carry no version (the release tag does) and use `macos`
+rather than Go's `darwin`:
 
-Extract and move the `osaat` binary onto your `PATH`.
+- Bare, ready-to-run binaries: `osaat_<os>_<arch>` (`.exe` on Windows),
+  e.g. `osaat_macos_arm64`, `osaat_linux_amd64`, `osaat_windows_amd64.exe`.
+- Archives with `LICENSE`, `README.md` and `CHANGELOG.md`:
+  `osaat_<os>_<arch>.tar.gz` (`.zip` on Windows).
+- macOS also ships `osaat_macos_universal` (Apple Silicon + Intel).
+- ARM 32-bit builds carry a `v7` suffix (`osaat_linux_armv7`).
+- Linux packages: `osaat_linux_<arch>.deb`, `.rpm` and `.apk`.
+
+`checksums.txt` lists the SHA-256 of every asset. Each release also carries a
+build-provenance attestation, so a download can be verified with:
+
+```sh
+gh attestation verify osaat_macos_arm64 --repo simtabi/osaat
+```
+
+Move the binary (or the one extracted from the archive) onto your `PATH`.
 
 ## Zero-dependency Bash fallback (macOS only)
 
