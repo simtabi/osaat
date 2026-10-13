@@ -14,6 +14,10 @@ updates:
     labels:
       - dependencies
       - go
+    groups:
+      gomod-minor-and-patch:
+        patterns: ["*"]
+        update-types: [minor, patch]
 
   - package-ecosystem: github-actions
     directory: "/"
@@ -28,3 +32,7 @@ updates:
     labels:
       - dependencies
       - github-actions
+    groups:
+      github-actions-minor-and-patch:
+        patterns: ["*"]
+        update-types: [minor, patch]
