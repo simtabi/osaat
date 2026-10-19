@@ -125,9 +125,11 @@ homebrew_casks:
       git:
         url: '{{ if envOrDefault "HOMEBREW_TAP_DEPLOY_KEY" "" }}git@github.com:simtabi/homebrew-tap.git{{ end }}'
         private_key: '{{ envOrDefault "HOMEBREW_TAP_DEPLOY_KEY" "" }}'
-      # The tap's default branch requires a pull request, so push a branch and
-      # open one against it instead of committing to main.
-      branch: "osaat-{{ .Version }}"
+      # The tap's default branch requires a pull request, with deploy keys as the
+      # one bypass actor. With the key, git pushes straight to main (the
+      # pull_request block is ignored on the git path, measured with GoReleaser
+      # 2.18.3); with the token, push a branch and open a pull request as before.
+      branch: '{{ if envOrDefault "HOMEBREW_TAP_DEPLOY_KEY" "" }}main{{ else }}osaat-{{ .Version }}{{ end }}'
       pull_request:
         enabled: true
     directory: Casks

@@ -25,6 +25,9 @@ jobs:
     runs-on: ubuntu-latest
     environment: release
     timeout-minutes: 30
+    env:
+      # Whether both deploy keys are set, never the keys: secrets cannot be read in a step's `if`.
+      USE_DEPLOY_KEYS: ${{ secrets.HOMEBREW_TAP_DEPLOY_KEY != '' && secrets.SCOOP_BUCKET_DEPLOY_KEY != '' }}
     permissions:
       contents: write # create the release and upload assets
       id-token: write # keyless signing for the provenance attestation
@@ -53,8 +56,11 @@ jobs:
       # is scoped to this repository and cannot do that, and a PAT would be a
       # long-lived credential; Refresh Bot mints a token for this run only,
       # limited to the two package repositories. Both values are org-level.
+      # Not minted once both deploy keys are set: GoReleaser then pushes with the keys, and the
+      # step's output is simply empty.
       - name: Mint a package-repository token
         id: tap
+        if: env.USE_DEPLOY_KEYS != 'true'
         uses: actions/create-github-app-token@v3
         with:
           client-id: ${{ vars.REFRESH_APP_CLIENT_ID }}
