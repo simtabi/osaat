@@ -36,9 +36,10 @@ The release workflow (`.github/workflows/release.yml`) triggers on a
 - A signed build-provenance attestation for every asset in `checksums.txt`.
 - The GitHub Release, whose body is the tagged version's `CHANGELOG.md`
   section (`scripts/extract-changelog.sh`).
-- A pull request against `simtabi/homebrew-tap` updating `Casks/osaat.rb`.
-  The tap only accepts pull requests, so `brew install simtabi/tap/osaat`
-  serves the new version once that pull request is merged.
+- An update to `Casks/osaat.rb` in `simtabi/homebrew-tap`. With the deploy
+  key it is pushed straight to `main` (deploy keys are the tap ruleset's one
+  bypass actor), so `brew install simtabi/tap/osaat` serves the new version at
+  once. Without the key it falls back to a pull request, served once merged.
 
 Scoop and Winget manifests are built but not published until the repository
 variable `SKIP_WINDOWS_PKGS` is set to `false`; Winget also needs a
@@ -46,11 +47,11 @@ variable `SKIP_WINDOWS_PKGS` is set to `false`; Winget also needs a
 
 ## Credentials
 
-No long-lived token is stored for the release. The workflow mints a
-per-run token from the Refresh Bot GitHub App, limited to
-`simtabi/homebrew-tap` and `simtabi/scoop-bucket` with contents and pull
-request write access, from the org-level `REFRESH_APP_CLIENT_ID` variable and
-`REFRESH_APP_PRIVATE_KEY` secret. The release itself uses `GITHUB_TOKEN`.
+The tap and bucket are written with the write deploy keys `HOMEBREW_TAP_DEPLOY_KEY` (on `simtabi/homebrew-tap`) and `SCOOP_BUCKET_DEPLOY_KEY` (on `simtabi/scoop-bucket`), each a repository secret that reaches its one repository and nothing else. While
+both are set, no app token is minted. Without them, the workflow falls back to a
+per-run Refresh Bot token limited to those two repositories (contents and pull
+request write), from `REFRESH_APP_CLIENT_ID` and `REFRESH_APP_PRIVATE_KEY`. The
+release itself uses `GITHUB_TOKEN`.
 
 ## Trusted publishing (PyPI / npm / etc.)
 

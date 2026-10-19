@@ -119,9 +119,17 @@ homebrew_casks:
       owner: simtabi
       name: homebrew-tap
       token: "{{ .Env.TAP_GITHUB_TOKEN }}"
-      # The tap's default branch requires a pull request, so push a branch and
-      # open one against it instead of committing to main.
-      branch: "osaat-{{ .Version }}"
+      # Write deploy key on simtabi/homebrew-tap (secret HOMEBREW_TAP_DEPLOY_KEY): reaches that
+      # one repository only. Set, git pushes with it; unset, the URL is empty and the token
+      # path above runs. Measured with GoReleaser 2.18.3.
+      git:
+        url: '{{ if envOrDefault "HOMEBREW_TAP_DEPLOY_KEY" "" }}git@github.com:simtabi/homebrew-tap.git{{ end }}'
+        private_key: '{{ envOrDefault "HOMEBREW_TAP_DEPLOY_KEY" "" }}'
+      # The tap's default branch requires a pull request, with deploy keys as the
+      # one bypass actor. With the key, git pushes straight to main (the
+      # pull_request block is ignored on the git path, measured with GoReleaser
+      # 2.18.3); with the token, push a branch and open a pull request as before.
+      branch: '{{ if envOrDefault "HOMEBREW_TAP_DEPLOY_KEY" "" }}main{{ else }}osaat-{{ .Version }}{{ end }}'
       pull_request:
         enabled: true
     directory: Casks
@@ -143,6 +151,12 @@ scoops:
       owner: simtabi
       name: scoop-bucket
       token: "{{ .Env.TAP_GITHUB_TOKEN }}"
+      # Write deploy key on simtabi/scoop-bucket (secret SCOOP_BUCKET_DEPLOY_KEY): reaches that
+      # one repository only. Set, git pushes with it; unset, the URL is empty and the token
+      # path above runs. Measured with GoReleaser 2.18.3.
+      git:
+        url: '{{ if envOrDefault "SCOOP_BUCKET_DEPLOY_KEY" "" }}git@github.com:simtabi/scoop-bucket.git{{ end }}'
+        private_key: '{{ envOrDefault "SCOOP_BUCKET_DEPLOY_KEY" "" }}'
       # Same pull-request-only rule as the tap.
       branch: "osaat-{{ .Version }}"
       pull_request:
