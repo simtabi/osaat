@@ -41,9 +41,9 @@ The release workflow (`.github/workflows/release.yml`) triggers on a
   bypass actor), so `brew install simtabi/tap/osaat` serves the new version at
   once. Without the key it falls back to a pull request, served once merged.
 
-Scoop and Winget manifests are built but not published until the repository
-variable `SKIP_WINDOWS_PKGS` is set to `false`; Winget also needs a
-`simtabi/winget-pkgs` fork.
+Scoop and Winget manifests are built but not published by default. Scoop publishes when the
+repository variable `SKIP_SCOOP` is `false` (unset, it follows `SKIP_WINDOWS_PKGS`); Winget publishes
+when `SKIP_WINDOWS_PKGS` is `false` and also needs a `simtabi/winget-pkgs` fork.
 
 ## Credentials
 
