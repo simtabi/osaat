@@ -1,53 +1,52 @@
 # Installation
 
-## Homebrew (macOS, Linux)
+## Build from source
+
+osaat is built from source. Binary releases are on hold until the maintainer
+decides otherwise, so this page offers no download, package-manager or
+`go install` path. You need Go 1.25 or newer (the version `go.mod` names),
+`git` and `make`.
 
 ```sh
-brew install simtabi/tap/osaat
+git clone https://github.com/simtabi/osaat ~/src/osaat
+make -C ~/src/osaat build      # -> ~/src/osaat/bin/osaat
+install -m 0755 ~/src/osaat/bin/osaat ~/.local/bin/osaat
 ```
 
-The tap is configured automatically on first install.
-
-## Go
+Any directory on `PATH` works in place of `~/.local/bin`. On Windows, or anywhere
+without `make`, build with Go directly and put the binary on your `PATH`:
 
 ```sh
-go install github.com/simtabi/osaat/cmd/osaat@latest
+go -C ~/src/osaat build -o bin/osaat ./cmd/osaat
 ```
 
-Requires Go 1.25 or newer.
-
-## Direct binary
-
-Download the archive for your platform from the
-[latest release](https://github.com/simtabi/osaat/releases/latest).
-Every release ships these architectures:
-
-| OS | Architectures |
-|---|---|
-| macOS | `amd64` (Intel), `arm64` (Apple Silicon) |
-| Linux | `amd64`, `arm64`, `386` (32-bit x86), `armv7` (32-bit ARM) |
-| Windows | `amd64`, `arm64`, `386` |
-| FreeBSD | `amd64`, `arm64`, `386` |
-
-Asset names carry no version (the release tag does) and use `macos`
-rather than Go's `darwin`:
-
-- Bare, ready-to-run binaries: `osaat_<os>_<arch>` (`.exe` on Windows),
-  e.g. `osaat_macos_arm64`, `osaat_linux_amd64`, `osaat_windows_amd64.exe`.
-- Archives with `LICENSE`, `README.md` and `CHANGELOG.md`:
-  `osaat_<os>_<arch>.tar.gz` (`.zip` on Windows).
-- macOS also ships `osaat_macos_universal` (Apple Silicon + Intel).
-- ARM 32-bit builds carry a `v7` suffix (`osaat_linux_armv7`).
-- Linux packages: `osaat_linux_<arch>.deb`, `.rpm` and `.apk`.
-
-`checksums.txt` lists the SHA-256 of every asset. Each release also carries a
-build-provenance attestation, so a download can be verified with:
+A version is a tag: check one out to build exactly that release.
 
 ```sh
-gh attestation verify osaat_macos_arm64 --repo simtabi/osaat
+git -C ~/src/osaat fetch --tags
+git -C ~/src/osaat checkout v0.1.1
+make -C ~/src/osaat build
 ```
 
-Move the binary (or the one extracted from the archive) onto your `PATH`.
+### Updating
+
+```sh
+git -C ~/src/osaat pull --ff-only
+make -C ~/src/osaat build
+install -m 0755 ~/src/osaat/bin/osaat ~/.local/bin/osaat
+```
+
+`make build` stamps the version from `git describe`, so `osaat version` reports
+the tag or commit the binary was built from, and a build from a branch is still
+identifiable.
+
+### Earlier binary releases
+
+0.1.1 was published with binaries and archives for macOS, Linux, Windows and
+FreeBSD, Linux `.deb`/`.rpm`/`.apk` packages, checksums with a build-provenance
+attestation, and a Homebrew cask in `simtabi/homebrew-tap`. Those stay where they
+are, and an existing install keeps working, but none of those channels is updated
+while releases are on hold: build from source to get anything newer.
 
 ## Zero-dependency Bash fallback (macOS only)
 
@@ -66,15 +65,6 @@ chmod +x bash-fallback.sh
 See [`docs/tools/bash-fallback.md`](tools/bash-fallback.md) for
 details on its capabilities and limitations.
 
-## Source
-
-```sh
-git clone https://github.com/simtabi/osaat.git
-cd osaat
-make build
-./bin/osaat version
-```
-
 ## Verify the install
 
 ```sh
@@ -85,15 +75,12 @@ osaat --help
 ## Uninstall
 
 ```sh
-# Homebrew
+# A binary built from source
+rm ~/.local/bin/osaat     # or wherever you installed it
+
+# An earlier Homebrew install (0.1.1)
 brew uninstall osaat
 brew untap simtabi/tap
-
-# Go
-rm $(which osaat)
-
-# Direct binary
-rm /usr/local/bin/osaat   # or wherever you put it
 ```
 
 User configuration at `~/.config/osaat/` is left in place by uninstall —

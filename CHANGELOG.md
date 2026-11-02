@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- The release workflow no longer starts on a tag push. Binary releases are on hold, and a release
+  runs only when dispatched by hand on a `v[0-9]*` tag with `-f confirm=release-go`; a test fails
+  if an automatic trigger returns.
+- The README and installation guide build osaat from source only: no download, package-manager
+  or `go install` path is offered while binary releases are on hold. The 0.1.1 binaries and
+  Homebrew cask are described as frozen, not removed.
+
 ### Fixed
 
 - Releases published with an empty description. `.goreleaser.yaml` set `changelog.disable: true`,
