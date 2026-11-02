@@ -3,6 +3,11 @@
 How a tagged release is cut, what it publishes, and how the package
 managers are updated.
 
+Binary releases are on hold. A `vX.Y.Z` tag records a version and publishes
+nothing; binaries, packages and the Homebrew cask are built from it only when the
+release workflow is dispatched by hand with a confirmation (below). Until binary
+releases resume, users build from source ([installation](installation.md#build-from-source)).
+
 ## Versioning
 
 Semantic versioning. Pre-1.0 means minor version bumps may include
@@ -18,12 +23,26 @@ breaking changes; patch releases are bug fixes only.
 4. Land the roll through a pull request; never push to `main`.
 5. Tag the merge commit on `main` and push the tag:
    `git tag -a vX.Y.Z -m "Release vX.Y.Z" && git push origin vX.Y.Z`.
+   Pushing a tag publishes nothing: binary releases are on hold, and osaat is
+   built from source until the owner decides otherwise.
+6. Only when a binary release has been approved for this version, dispatch the
+   release workflow on the tag:
+
+   ```sh
+   gh workflow run release.yml --repo simtabi/osaat --ref vX.Y.Z -f confirm=release-go
+   ```
+
+   `vX.Y.Z` must be a tag already on GitHub. The command publishes for real, so
+   run it only for a version the owner approved. The workflow's first step
+   refuses to run without `confirm=release-go`, or on anything but a `v[0-9]*`
+   tag, before a single artifact is built.
 
 The module lives at the repository root (`github.com/simtabi/osaat`), so the
-one `vX.Y.Z` tag is all `go install` needs; there is no `src/` alias tag.
+one `vX.Y.Z` tag is all a Go build needs; there is no `src/` alias tag.
 
-The release workflow (`.github/workflows/release.yml`) triggers on a
-`vX.Y.Z` tag and runs GoReleaser. It publishes, from that one tag:
+The release workflow (`.github/workflows/release.yml`) runs only on that
+confirmed dispatch, never on a tag push, and runs GoReleaser against the tag it
+was dispatched on. It publishes, from that one tag:
 
 - Bare binaries `osaat_<os>_<arch>` and archives `osaat_<os>_<arch>.tar.gz`
   (`.zip` on Windows) for macOS (amd64, arm64, universal), Linux (amd64,
@@ -55,8 +74,9 @@ release itself uses `GITHUB_TOKEN`.
 
 ## Trusted publishing (PyPI / npm / etc.)
 
-Not applicable — `osaat` is a Go binary distributed via GitHub Releases
-and the Homebrew tap. No package-registry publishing keys are needed.
+Not applicable — `osaat` is a Go binary, built from source while binary
+releases are on hold, and otherwise distributed via GitHub Releases and the
+Homebrew tap. No package-registry publishing keys are needed.
 
 ## Rollback
 
