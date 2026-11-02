@@ -8,22 +8,19 @@ The binary is `osaat`.
 
 ## Install
 
-Homebrew (macOS, Linux):
+osaat is built from source: binary releases are on hold, so there is no
+download, package-manager or `go install` channel to use. You need Go (the
+version `go.mod` names), `git` and `make`.
 
 ```sh
-brew install simtabi/tap/osaat
+git clone https://github.com/simtabi/osaat ~/src/osaat
+make -C ~/src/osaat build      # -> ~/src/osaat/bin/osaat
+install -m 0755 ~/src/osaat/bin/osaat ~/.local/bin/osaat
 ```
 
-Go (any supported platform):
-
-```sh
-go install github.com/simtabi/osaat/cmd/osaat@latest
-```
-
-Direct binary: see the [latest release](https://github.com/simtabi/osaat/releases/latest).
-Pre-built binaries cover macOS (Intel + Apple Silicon), Linux (amd64,
-arm64, 386, armv7), Windows (amd64, arm64, 386), and FreeBSD (amd64,
-arm64, 386).
+Pinning a version, updating, building without `make`, and the binaries and
+Homebrew cask published for 0.1.1 (frozen, not updated) are in
+[docs/installation.md](docs/installation.md).
 
 **Zero-dep Bash fallback (macOS only):** for the cold-start case
 where Go and Homebrew aren't installed yet, use
@@ -114,10 +111,10 @@ End-user documentation for `osaat`. Project-internal design notes live in
 
 | Document | What it covers |
 |---|---|
-| [Installation](docs/installation.md) | How to install on macOS, Linux, BSD |
+| [Installation](docs/installation.md) | How to build and install from source on macOS, Linux, BSD |
 | [Configuration](docs/configuration.md) | Config file format, environment variables, profiles |
 | [Architecture](docs/architecture.md) | What the tool does and how it does it, at a level useful for contributors |
-| [Release process](docs/release.md) | How a release is cut and how the Homebrew tap is updated |
+| [Release process](docs/release.md) | How a release is cut, and the confirmed dispatch that publishes binaries |
 | [Migration / shipping checklist](docs/shipping-checklist.md) | Step-by-step migration runbook |
 
 Per-command reference:
