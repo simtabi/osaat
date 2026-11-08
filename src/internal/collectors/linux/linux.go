@@ -17,10 +17,10 @@ import (
 
 // Collector is the Linux implementation of collectors.Collector.
 type Collector struct {
-	runCmd      collectors.RunCmd
-	log         *slog.Logger
-	insights    map[string]bool
-	progress    ProgressFn
+	runCmd   collectors.RunCmd
+	log      *slog.Logger
+	insights map[string]bool
+	progress ProgressFn
 }
 
 // ProgressFn is the same shape as the macOS collector's: invoked at
@@ -96,9 +96,9 @@ func (c *Collector) Collect(ctx context.Context) ([]audit.AppRecord, error) {
 	}
 
 	subs := []struct {
-		name     string
-		exe      string
-		fn       func(context.Context) ([]audit.AppRecord, error)
+		name string
+		exe  string
+		fn   func(context.Context) ([]audit.AppRecord, error)
 	}{
 		{"dpkg", "dpkg-query", c.collectDpkg},
 		{"rpm", "rpm", c.collectRpm},

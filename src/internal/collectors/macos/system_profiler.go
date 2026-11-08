@@ -84,4 +84,3 @@ func mapObtainedFrom(obtained string, current audit.Source) audit.Source {
 		return current
 	}
 }
-

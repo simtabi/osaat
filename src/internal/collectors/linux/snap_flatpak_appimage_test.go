@@ -100,9 +100,9 @@ func TestAppImageWalkPicksUpOnlyAppImageFiles(t *testing.T) {
 	dir := t.TempDir()
 	for _, name := range []string{
 		"Foo-1.0-x86_64.AppImage",
-		"Bar.appimage",   // case-insensitive match
-		"NotAnAppImage",  // skipped
-		"keep.me.txt",    // skipped
+		"Bar.appimage",  // case-insensitive match
+		"NotAnAppImage", // skipped
+		"keep.me.txt",   // skipped
 	} {
 		path := filepath.Join(dir, name)
 		if err := os.WriteFile(path, []byte("fake"), 0o755); err != nil {

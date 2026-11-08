@@ -84,13 +84,13 @@ func (r *TextReporter) Write(records []audit.AppRecord, w io.Writer) error {
 			fmt.Fprintf(&b, " (%s)", rec.Version)
 		}
 		fmt.Fprintln(&b)
-		writeIfSet(&b, "source",    string(rec.Source))
-		writeIfSet(&b, "bundle",    rec.BundleID)
-		writeIfSet(&b, "version",   rec.Version)
-		writeIfSet(&b, "signing",   string(rec.SigningStatus))
-		writeIfSet(&b, "team",      rec.SigningTeam)
-		writeIfSet(&b, "author",    rec.Author)
-		writeIfSet(&b, "path",      rec.Path)
+		writeIfSet(&b, "source", string(rec.Source))
+		writeIfSet(&b, "bundle", rec.BundleID)
+		writeIfSet(&b, "version", rec.Version)
+		writeIfSet(&b, "signing", string(rec.SigningStatus))
+		writeIfSet(&b, "team", rec.SigningTeam)
+		writeIfSet(&b, "author", rec.Author)
+		writeIfSet(&b, "path", rec.Path)
 		if rec.SizeBytes > 0 {
 			writeIfSet(&b, "size", humanSize(rec.SizeBytes))
 		}
@@ -100,8 +100,8 @@ func (r *TextReporter) Write(records []audit.AppRecord, w io.Writer) error {
 		if rec.LastUsedAt != nil {
 			writeIfSet(&b, "lastused", rec.LastUsedAt.UTC().Format(time.RFC3339))
 		}
-		writeIfSet(&b, "download",  rec.DownloadURL)
-		writeIfSet(&b, "vendor",    rec.VendorURL)
+		writeIfSet(&b, "download", rec.DownloadURL)
+		writeIfSet(&b, "vendor", rec.VendorURL)
 		writeIfSet(&b, "reinstall", rec.ReinstallCmd)
 		if len(rec.CollectorNotes) > 0 {
 			writeIfSet(&b, "notes", strings.Join(rec.CollectorNotes, "; "))

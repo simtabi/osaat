@@ -37,18 +37,18 @@ type htmlContext struct {
 }
 
 type htmlRow struct {
-	Name          string
-	Version       string
-	Source        string
-	Signing       string
-	SigningTeam   string
-	Author        string
-	BundleID      string
-	Size          string
-	InstalledAt   string
-	DownloadURL   string
-	ReinstallCmd  string
-	Notes         string
+	Name         string
+	Version      string
+	Source       string
+	Signing      string
+	SigningTeam  string
+	Author       string
+	BundleID     string
+	Size         string
+	InstalledAt  string
+	DownloadURL  string
+	ReinstallCmd string
+	Notes        string
 }
 
 // Write implements Reporter.

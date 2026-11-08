@@ -34,13 +34,13 @@ type tickMsg time.Time
 
 // ScanModel is the bubbletea model that drives the live scan view.
 type ScanModel struct {
-	phase    string
-	counts   []counter
-	started  time.Time
-	elapsed  time.Duration
-	done     bool
-	err      error
-	width    int
+	phase   string
+	counts  []counter
+	started time.Time
+	elapsed time.Duration
+	done    bool
+	err     error
+	width   int
 }
 
 type counter struct {

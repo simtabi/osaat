@@ -53,7 +53,7 @@ var safeChars = regexp.MustCompile(`^[A-Za-z0-9_./@:=+,-]+$`)
 
 // shellQuote returns s wrapped in single quotes when it contains any
 // character that would need escaping in a POSIX shell. Embedded single
-// quotes are encoded via the standard '\'' trick.
+// quotes are encoded by closing the quote, writing \' and reopening it.
 func shellQuote(s string) string {
 	if s == "" {
 		return "''"

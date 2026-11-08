@@ -101,10 +101,10 @@ func TestHTMLReporterShape(t *testing.T) {
 
 func TestHumanSize(t *testing.T) {
 	cases := map[int64]string{
-		0:            "",
-		512:          "512 B",
-		2048:         "2.0 KB",
-		3_500_000:    "3.3 MB",
+		0:              "",
+		512:            "512 B",
+		2048:           "2.0 KB",
+		3_500_000:      "3.3 MB",
 		15_000_000_000: "14.0 GB",
 	}
 	for in, want := range cases {
