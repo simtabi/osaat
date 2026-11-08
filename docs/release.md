@@ -15,7 +15,9 @@ breaking changes; patch releases are bug fixes only.
 
 ## Cutting a release
 
-1. Ensure `main` is green: `make test && make lint && make snapshot`.
+1. Ensure `main` is green: `make test && make lint && make cross`.
+   `make snapshot` additionally runs GoReleaser locally without publishing
+   (output in `.cache/goreleaser/`).
 2. Roll `CHANGELOG.md`: replace `## [Unreleased]` with
    `## [X.Y.Z] - YYYY-MM-DD` and create a fresh `## [Unreleased]`
    section above it.
@@ -37,11 +39,20 @@ breaking changes; patch releases are bug fixes only.
    refuses to run without `confirm=release-go`, or on anything but a `v[0-9]*`
    tag, before a single artifact is built.
 
-The module lives at the repository root (`github.com/simtabi/osaat`), so the
-one `vX.Y.Z` tag is all a Go build needs; there is no `src/` alias tag.
+The Go module lives in `src/` (`github.com/simtabi/osaat/src`), and Go resolves
+a module in a subdirectory only through a tag carrying that prefix, so a release
+needs `src/vX.Y.Z` on the same commit as `vX.Y.Z`. The release workflow creates
+it before GoReleaser runs; never push it by hand, and never move it once it
+exists.
+
+Local builds never touch release assets: `make cross` writes
+`build/<os>/osaat_<os>_<arch>[.exe]` and `build/checksums.txt`, `make dist` adds
+`build/archives/`, and GoReleaser writes its own scratch output to
+`.cache/goreleaser/`. None of them publishes.
 
 The release workflow (`.github/workflows/release.yml`) runs only on that
-confirmed dispatch, never on a tag push, and runs GoReleaser against the tag it
+confirmed dispatch, never on a tag push, and runs GoReleaser
+(`--config src/.goreleaser.yaml`, from the repository root) against the tag it
 was dispatched on. It publishes, from that one tag:
 
 - Bare binaries `osaat_<os>_<arch>` and archives `osaat_<os>_<arch>.tar.gz`
@@ -54,7 +65,7 @@ was dispatched on. It publishes, from that one tag:
 - `checksums.txt` (SHA-256, bare file names) over every asset.
 - A signed build-provenance attestation for every asset in `checksums.txt`.
 - The GitHub Release, whose body is the tagged version's `CHANGELOG.md`
-  section (`scripts/extract-changelog.sh`).
+  section (`src/scripts/extract-changelog.sh`).
 - An update to `Casks/osaat.rb` in `simtabi/homebrew-tap`. With the deploy
   key it is pushed straight to `main` (deploy keys are the tap ruleset's one
   bypass actor), so `brew install simtabi/tap/osaat` serves the new version at

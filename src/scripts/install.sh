@@ -5,7 +5,7 @@
 #   curl -fsSL https://opensource.simtabi.com/install/osaat | bash
 #   curl -fsSL https://opensource.simtabi.com/install/osaat | bash -s v0.1.0
 #
-# Windows users: use scripts/install.ps1 (irm ... | iex) or download the bare
+# Windows users: use src/scripts/install.ps1 (irm ... | iex) or download the bare
 # osaat_windows_<arch>.exe from the GitHub releases page.
 #
 set -euo pipefail

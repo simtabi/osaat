@@ -88,7 +88,7 @@ osaat install-schedule --uninstall
 - The scheduler needs an absolute, stable path to the `osaat` binary.
   `install-schedule` resolves the current binary via `os.Executable()`
   and follows any leading symlink, so installing from
-  `./bin/osaat` writes a plist that points at the resolved path.
+  `build/macos/osaat` writes a plist that points at the resolved path.
 - The unit file is regenerated each run — re-running with different
   flags safely overwrites the old plist or service+timer pair.
 - Uninstall is idempotent. Running it twice is a no-op the second time.

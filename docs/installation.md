@@ -4,21 +4,30 @@
 
 osaat is built from source. Binary releases are on hold until the maintainer
 decides otherwise, so this page offers no download, package-manager or
-`go install` path. You need Go 1.25 or newer (the version `go.mod` names),
+`go install` path. You need Go 1.25 or newer (the version `src/go.mod` names),
 `git` and `make`.
 
 ```sh
 git clone https://github.com/simtabi/osaat ~/src/osaat
-make -C ~/src/osaat build      # -> ~/src/osaat/bin/osaat
-install -m 0755 ~/src/osaat/bin/osaat ~/.local/bin/osaat
+make -C ~/src/osaat build      # -> ~/src/osaat/build/macos/osaat (build/linux/ on Linux)
+install -m 0755 ~/src/osaat/build/macos/osaat ~/.local/bin/osaat
 ```
 
-Any directory on `PATH` works in place of `~/.local/bin`. On Windows, or anywhere
-without `make`, build with Go directly and put the binary on your `PATH`:
+`make build` writes `build/<os>/osaat`, where `<os>` is `macos`, `linux`,
+`freebsd` or `windows` (with `.exe`). `make install` does both steps, copying
+the binary to `~/.local/bin` (set `BINDIR=` for another directory). Any
+directory on `PATH` works in place of `~/.local/bin`.
+
+The Go module lives in `src/` (`github.com/simtabi/osaat/src`). On Windows, or
+anywhere without `make`, build with Go directly and put the binary on your
+`PATH`:
 
 ```sh
-go -C ~/src/osaat build -o bin/osaat ./cmd/osaat
+go -C ~/src/osaat/src build -o ../build/windows/osaat.exe ./cmd/osaat
 ```
+
+Use `../build/linux/osaat` (or `macos`, `freebsd`) on other systems, so the
+binary lands in the same per-OS folder `make build` uses.
 
 A version is a tag: check one out to build exactly that release.
 
@@ -32,8 +41,7 @@ make -C ~/src/osaat build
 
 ```sh
 git -C ~/src/osaat pull --ff-only
-make -C ~/src/osaat build
-install -m 0755 ~/src/osaat/bin/osaat ~/.local/bin/osaat
+make -C ~/src/osaat install
 ```
 
 `make build` stamps the version from `git describe`, so `osaat version` reports

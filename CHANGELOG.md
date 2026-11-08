@@ -9,12 +9,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- The Go module moved into `src/` and is now `github.com/simtabi/osaat/src`. `go.mod`, `cmd/`,
+  `internal/`, `.goreleaser.yaml` and the build and release scripts live under `src/`;
+  `scripts/bash-fallback.sh` stays at the root so its published URL keeps working. A release now
+  also creates the `src/vX.Y.Z` tag Go resolves the module through.
+- `build/` holds one folder per OS (`build/macos/`, `build/linux/`, `build/windows/`,
+  `build/freebsd/`) with `osaat_<os>_<arch>[.exe]` binaries, one `build/checksums.txt` over
+  `{os}/{file}` paths, and `build/archives/` only after `make dist`. There is no `build/dist/` any
+  more: GoReleaser writes its scratch output to `.cache/goreleaser/`.
+- `make build` writes `build/<host-os>/osaat` instead of `bin/osaat`. New targets: `make install`,
+  `make cross`, `make dist` and `make check-build`.
+- `src/scripts/build-all.sh` no longer deletes `build/` whole or rewrites the tracked
+  `build/targets.txt`; it removes generated output only.
+
 - The release workflow no longer starts on a tag push. Binary releases are on hold, and a release
   runs only when dispatched by hand on a `v[0-9]*` tag with `-f confirm=release-go`; a test fails
   if an automatic trigger returns.
 - The README and installation guide build osaat from source only: no download, package-manager
   or `go install` path is offered while binary releases are on hold. The 0.1.1 binaries and
   Homebrew cask are described as frozen, not removed.
+
+### Added
+
+- Tests that fail if `build/` holds anything but OS folders, its inputs, `checksums.txt` and
+  `archives/`; if a Dockerfile, compose file or image-publishing step appears; or if the docs offer
+  a `go install` path while releases are on hold.
 
 ### Fixed
 
