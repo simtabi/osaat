@@ -16,6 +16,13 @@ name: Release
 #
 # It stays tag-driven: GoReleaser reads the version from the ref it is run
 # against, and the first step refuses a ref that is not a v[0-9]* tag.
+# src/cmd/osaat's TestReleaseRunsOnlyOnAConfirmedDispatch and
+# src/internal/release's TestReleaseRefusesFirst fail if an automatic trigger
+# comes back or the refusal stops being the first step.
+#
+# The module lives in src/: GoReleaser runs from the repository root with
+# --config src/.goreleaser.yaml and writes into .cache/goreleaser/, never into
+# build/.
 on:
   workflow_dispatch:
     inputs:
@@ -66,17 +73,36 @@ jobs:
 
       - uses: actions/setup-go@v7
         with:
-          go-version-file: go.mod
+          go-version-file: src/go.mod
           cache: true
+          cache-dependency-path: src/go.sum
 
       # syft powers GoReleaser's SBOM generation.
       - uses: anchore/sbom-action/download-syft@66cbf4bc1f1c0d2edc94016e65bc221b6bb0ad6c # v0.24.3
+
+      # A Go build of this module needs a tag named after its subdirectory: the
+      # module is github.com/simtabi/osaat/src, so Go resolves src/vX.Y.Z and
+      # ignores vX.Y.Z. OSS GoReleaser rejects the prefixed tag as non-semver,
+      # so the release runs off vX.Y.Z and mirrors src/vX.Y.Z onto the same
+      # commit here, where it cannot be forgotten. This workflow starts on no
+      # tag push, so pushing src/... starts no second run. A re-run finds the
+      # tag already there and leaves it alone: a public tag is never moved.
+      - name: Mirror the tag Go resolves the module through
+        run: |
+          alias_tag="src/${GITHUB_REF_NAME}"
+          if git rev-parse -q --verify "refs/tags/${alias_tag}" >/dev/null; then
+            echo "${alias_tag} already exists"
+          else
+            git tag "${alias_tag}" "${GITHUB_REF_NAME}^{commit}"
+            git push origin "refs/tags/${alias_tag}"
+            echo "pushed ${alias_tag}"
+          fi
 
       - name: Extract CHANGELOG section for this tag
         # Written outside the checkout: GoReleaser refuses to release from a dirty tree,
         # and an untracked release_notes.md in the repo root is exactly that (the
         # v0.1.0 tag failed on it). A snapshot build skips that check, so it never showed.
-        run: ./scripts/extract-changelog.sh "${GITHUB_REF_NAME}" > "${RUNNER_TEMP}/release_notes.md"
+        run: ./src/scripts/extract-changelog.sh "${GITHUB_REF_NAME}" > "${RUNNER_TEMP}/release_notes.md"
 
       # The Homebrew tap and Scoop bucket only accept changes through a pull
       # request, so GoReleaser pushes a branch there and opens one. GITHUB_TOKEN
@@ -103,8 +129,11 @@ jobs:
         uses: goreleaser/goreleaser-action@a4f02ab5355a589de60d917a659ce617ed19b3de # v7.3.0
         with:
           version: latest
-          args: release --clean --release-notes=${{ runner.temp }}/release_notes.md
+          args: release --clean --config src/.goreleaser.yaml --release-notes=${{ runner.temp }}/release_notes.md
         env:
+          # Two tags now sit on this commit (vX.Y.Z and src/vX.Y.Z); name the one
+          # GoReleaser releases so it never reads the version from the alias.
+          GORELEASER_CURRENT_TAG: ${{ github.ref_name }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAP_GITHUB_TOKEN: ${{ steps.tap.outputs.token }}
           # Write deploy keys on simtabi/homebrew-tap and simtabi/scoop-bucket. When set, GoReleaser
@@ -123,4 +152,4 @@ jobs:
       - name: Attest build provenance
         uses: actions/attest-build-provenance@v4
         with:
-          subject-checksums: build/dist/checksums.txt
+          subject-checksums: .cache/goreleaser/checksums.txt

@@ -1,7 +1,14 @@
-# Build artifacts
+# Generated build output. build/ keeps its tracked inputs (targets.txt, and
+# nfpm.yaml if one is added); everything else in it is generated, one folder
+# per OS (see Makefile). /bin/ and /dist/ are the pre-src/ layout's output
+# directories, kept ignored so an old local build is never committed.
+/build/*
+!/build/targets.txt
+!/build/nfpm.yaml
+# GoReleaser's scratch dist (src/.goreleaser.yaml `dist:`).
+/.cache/
 /bin/
 /dist/
-/build/dist/
 *.exe
 *.test
 *.out
@@ -45,7 +52,7 @@ secrets.json
 *.age
 *.tar.age
 
-# Local goreleaser snapshot output
+# Local goreleaser snapshot output (older GoReleaser default)
 .goreleaser/
 
 # Test fixtures with personally-identifying data

@@ -2,7 +2,8 @@ version: 2
 
 updates:
   - package-ecosystem: gomod
-    directory: "/"
+    # The Go module lives in src/.
+    directory: "/src"
     schedule:
       interval: weekly
       day: monday

@@ -27,10 +27,13 @@ jobs:
         with:
           go-version: ${{ matrix.go }}
           cache: true
-      - run: go mod download
-      - run: go vet ./...
-      - run: go build ./...
-      - run: go test -race -coverprofile=coverage.out ./...
+          cache-dependency-path: src/go.sum
+      # The module lives in src/: a bare `go test ./...` at the root finds no
+      # packages and passes, so every command names it.
+      - run: go -C src mod download
+      - run: go -C src vet ./...
+      - run: go -C src build ./...
+      - run: go -C src test -race -coverprofile=coverage.out ./...
 
   lint:
     name: lint
@@ -41,7 +44,28 @@ jobs:
         with:
           go-version: "1.25"
           cache: true
+          cache-dependency-path: src/go.sum
       - uses: golangci/golangci-lint-action@ba0d7d2ec06a0ea1cb5fa41b2e4a3ab91d21278a # v9.3.0
         with:
           version: latest
+          working-directory: src
           args: --timeout=5m
+
+  # Cross-compile every target into build/<os>/ and check the result, so the
+  # build layout is exercised on every pull request. It builds with
+  # src/scripts/build-all.sh and publishes nothing; no GoReleaser runs here.
+  # `make cross` ends with `make check-build`, so a stray file in build/ fails
+  # the job.
+  cross:
+    name: cross-compile
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: src/go.mod
+          cache: true
+          cache-dependency-path: src/go.sum
+      - run: make cross
+      - run: cd build && sha256sum -c checksums.txt
