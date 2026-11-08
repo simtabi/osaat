@@ -28,7 +28,7 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 
 BINARY="osaat"
-PKG="github.com/simtabi/osaat/internal/version"
+PKG="github.com/simtabi/osaat/src/internal/version"
 BUILD_DIR="build"
 OUT="${BUILD_DIR}/dist"
 ARCHIVE_DIR="${OUT}/archives"

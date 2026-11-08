@@ -9,7 +9,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/simtabi/osaat/internal/audit"
+	"github.com/simtabi/osaat/src/internal/audit"
 )
 
 // rpmQueryArgs requests a tab-separated row per package.

@@ -10,8 +10,8 @@ import (
 	"runtime"
 	"sync"
 
-	"github.com/simtabi/osaat/internal/audit"
-	"github.com/simtabi/osaat/internal/collectors"
+	"github.com/simtabi/osaat/src/internal/audit"
+	"github.com/simtabi/osaat/src/internal/collectors"
 )
 
 // DefaultParallelism is the worker-pool size used by per-app enrichers

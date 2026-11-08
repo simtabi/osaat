@@ -5,7 +5,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/simtabi/osaat/internal/audit"
+	"github.com/simtabi/osaat/src/internal/audit"
 )
 
 // mdlsDateLayouts holds the formats `mdls -raw` emits for date

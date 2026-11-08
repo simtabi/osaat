@@ -9,8 +9,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/simtabi/osaat/internal/audit"
-	"github.com/simtabi/osaat/internal/version"
+	"github.com/simtabi/osaat/src/internal/audit"
+	"github.com/simtabi/osaat/src/internal/version"
 )
 
 // TextReporter emits a plain-text inventory: one record per block with

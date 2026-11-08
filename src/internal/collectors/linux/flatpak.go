@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/simtabi/osaat/internal/audit"
+	"github.com/simtabi/osaat/src/internal/audit"
 )
 
 // flatpakColumns is the column set we ask flatpak to emit. The order

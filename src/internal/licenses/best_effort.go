@@ -12,8 +12,8 @@ import (
 
 	"howett.net/plist"
 
-	"github.com/simtabi/osaat/internal/audit"
-	"github.com/simtabi/osaat/internal/secrets"
+	"github.com/simtabi/osaat/src/internal/audit"
+	"github.com/simtabi/osaat/src/internal/secrets"
 )
 
 // NewBestEffortScanner walks Preferences plists and Application

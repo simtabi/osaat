@@ -8,8 +8,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/simtabi/osaat/internal/audit"
-	"github.com/simtabi/osaat/internal/secrets"
+	"github.com/simtabi/osaat/src/internal/audit"
+	"github.com/simtabi/osaat/src/internal/secrets"
 )
 
 // Scanner is the contract every license-extraction mode implements.

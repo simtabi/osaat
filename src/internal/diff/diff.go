@@ -10,7 +10,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/simtabi/osaat/internal/audit"
+	"github.com/simtabi/osaat/src/internal/audit"
 )
 
 // SchemaDiffV1 is the value of the "schema" field at the top of a

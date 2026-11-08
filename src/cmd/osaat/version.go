@@ -5,7 +5,7 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/simtabi/osaat/internal/version"
+	"github.com/simtabi/osaat/src/internal/version"
 )
 
 func newVersionCmd() *cobra.Command {

@@ -5,8 +5,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/simtabi/osaat/internal/audit"
-	"github.com/simtabi/osaat/internal/collectors"
+	"github.com/simtabi/osaat/src/internal/audit"
+	"github.com/simtabi/osaat/src/internal/collectors"
 )
 
 // enrichFromLipo runs `lipo -archs <executable>` for every record and

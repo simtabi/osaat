@@ -6,7 +6,7 @@ import (
 
 	"github.com/charmbracelet/huh"
 
-	"github.com/simtabi/osaat/internal/paths"
+	"github.com/simtabi/osaat/src/internal/paths"
 )
 
 // Run displays the interactive wizard and returns the populated

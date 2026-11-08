@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/simtabi/osaat/internal/audit"
+	"github.com/simtabi/osaat/src/internal/audit"
 )
 
 // appImageRoots is the set of locations osaat scans for *.AppImage

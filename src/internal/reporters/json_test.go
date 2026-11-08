@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/simtabi/osaat/internal/audit"
+	"github.com/simtabi/osaat/src/internal/audit"
 )
 
 func TestJSONReporterSortAndShape(t *testing.T) {

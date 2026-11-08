@@ -8,7 +8,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/simtabi/osaat/internal/audit"
+	"github.com/simtabi/osaat/src/internal/audit"
 )
 
 // pkgInfoLine matches a line of `pkg_info` output:

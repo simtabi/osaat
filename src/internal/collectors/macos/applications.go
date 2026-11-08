@@ -11,7 +11,7 @@ import (
 
 	"howett.net/plist"
 
-	"github.com/simtabi/osaat/internal/audit"
+	"github.com/simtabi/osaat/src/internal/audit"
 )
 
 // infoPlist captures the fields we read out of <App>.app/Contents/Info.plist.

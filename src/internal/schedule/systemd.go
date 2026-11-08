@@ -10,7 +10,7 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/simtabi/osaat/internal/collectors"
+	"github.com/simtabi/osaat/src/internal/collectors"
 )
 
 // Systemd implements Manager for Linux via systemd user units. The

@@ -4,7 +4,7 @@ import (
 	"context"
 	"strings"
 
-	"github.com/simtabi/osaat/internal/audit"
+	"github.com/simtabi/osaat/src/internal/audit"
 )
 
 // enrichFromQuarantine reads the `com.apple.quarantine` extended

@@ -17,8 +17,8 @@ import (
 	"log/slog"
 	"runtime"
 
-	"github.com/simtabi/osaat/internal/audit"
-	"github.com/simtabi/osaat/internal/collectors"
+	"github.com/simtabi/osaat/src/internal/audit"
+	"github.com/simtabi/osaat/src/internal/collectors"
 )
 
 // Collector is the Unix/BSD implementation of collectors.Collector.

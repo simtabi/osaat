@@ -10,7 +10,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/simtabi/osaat/internal/audit"
+	"github.com/simtabi/osaat/src/internal/audit"
 )
 
 // Collector is the contract every OS-specific collector implements.

@@ -7,8 +7,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/simtabi/osaat/internal/audit"
-	"github.com/simtabi/osaat/internal/collectors"
+	"github.com/simtabi/osaat/src/internal/audit"
+	"github.com/simtabi/osaat/src/internal/collectors"
 )
 
 // enrichFromPkgutil runs `pkgutil --pkgs` once and marks apps whose

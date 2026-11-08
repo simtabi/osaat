@@ -6,7 +6,7 @@ import (
 
 	"howett.net/plist"
 
-	"github.com/simtabi/osaat/internal/audit"
+	"github.com/simtabi/osaat/src/internal/audit"
 )
 
 // sysProfilerApp captures the fields we read out of

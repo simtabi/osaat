@@ -6,7 +6,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/simtabi/osaat/internal/audit"
+	"github.com/simtabi/osaat/src/internal/audit"
 )
 
 // WriteMasList emits a plain-text file with one Mac App Store app ID

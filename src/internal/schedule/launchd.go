@@ -9,7 +9,7 @@ import (
 	"path/filepath"
 	"text/template"
 
-	"github.com/simtabi/osaat/internal/collectors"
+	"github.com/simtabi/osaat/src/internal/collectors"
 )
 
 // Launchd implements Manager for macOS via launchd LaunchAgents.

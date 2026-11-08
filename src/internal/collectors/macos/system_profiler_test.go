@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	"github.com/simtabi/osaat/internal/audit"
+	"github.com/simtabi/osaat/src/internal/audit"
 )
 
 const sysProfilerXML = `<?xml version="1.0" encoding="UTF-8"?>

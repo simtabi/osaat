@@ -6,7 +6,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/simtabi/osaat/internal/audit"
+	"github.com/simtabi/osaat/src/internal/audit"
 )
 
 // WriteAptList emits an `apt-packages.txt` covering every record

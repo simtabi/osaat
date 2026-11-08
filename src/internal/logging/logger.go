@@ -20,7 +20,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/simtabi/osaat/internal/paths"
+	"github.com/simtabi/osaat/src/internal/paths"
 )
 
 // NewFileLogger creates a daily log file under logDir (mode 600) and

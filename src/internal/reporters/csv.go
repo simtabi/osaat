@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/simtabi/osaat/internal/audit"
+	"github.com/simtabi/osaat/src/internal/audit"
 )
 
 // CSVReporter writes a flat CSV with one row per record. Column order

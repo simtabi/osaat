@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/simtabi/osaat/internal/audit"
+	"github.com/simtabi/osaat/src/internal/audit"
 )
 
 // freebsdPkgArgs asks FreeBSD pkg to emit a tab-separated row per

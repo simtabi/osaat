@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/simtabi/osaat/internal/audit"
+	"github.com/simtabi/osaat/src/internal/audit"
 )
 
 // dpkgQueryArgs is the tab-separated format we request from

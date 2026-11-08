@@ -4,8 +4,8 @@ import (
 	"context"
 	"strings"
 
-	"github.com/simtabi/osaat/internal/audit"
-	"github.com/simtabi/osaat/internal/collectors"
+	"github.com/simtabi/osaat/src/internal/audit"
+	"github.com/simtabi/osaat/src/internal/collectors"
 )
 
 // enrichFromCodesign runs `codesign -dv --verbose=4 <path>` per app and

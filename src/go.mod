@@ -1,4 +1,4 @@
-module github.com/simtabi/osaat
+module github.com/simtabi/osaat/src
 
 go 1.25.0
 

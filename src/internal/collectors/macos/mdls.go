@@ -5,7 +5,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/simtabi/osaat/internal/audit"
+	"github.com/simtabi/osaat/src/internal/audit"
 )
 
 var mdlsURLRe = regexp.MustCompile(`"([^"]+)"`)

@@ -3,8 +3,8 @@ package licenses
 import (
 	"context"
 
-	"github.com/simtabi/osaat/internal/audit"
-	"github.com/simtabi/osaat/internal/secrets"
+	"github.com/simtabi/osaat/src/internal/audit"
+	"github.com/simtabi/osaat/src/internal/secrets"
 )
 
 // NewAggressiveScanner runs the best-effort scanner and adds a

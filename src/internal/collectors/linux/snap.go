@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/simtabi/osaat/internal/audit"
+	"github.com/simtabi/osaat/src/internal/audit"
 )
 
 // collectSnap runs `snap list --color=never --unicode=never` and

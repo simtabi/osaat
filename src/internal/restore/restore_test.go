@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/simtabi/osaat/internal/audit"
+	"github.com/simtabi/osaat/src/internal/audit"
 )
 
 func fixtureRecords() []audit.AppRecord {

@@ -12,7 +12,7 @@ import (
 
 	"github.com/pelletier/go-toml/v2"
 
-	"github.com/simtabi/osaat/internal/paths"
+	"github.com/simtabi/osaat/src/internal/paths"
 )
 
 // SchemaProfileV1 is the value of the "schema" field in a profile.

@@ -7,8 +7,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/simtabi/osaat/internal/audit"
-	"github.com/simtabi/osaat/internal/secrets"
+	"github.com/simtabi/osaat/src/internal/audit"
+	"github.com/simtabi/osaat/src/internal/secrets"
 )
 
 func TestForReturnsNilForNoneMode(t *testing.T) {

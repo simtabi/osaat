@@ -11,8 +11,8 @@ import (
 	"runtime"
 	"strings"
 
-	"github.com/simtabi/osaat/internal/audit"
-	"github.com/simtabi/osaat/internal/collectors"
+	"github.com/simtabi/osaat/src/internal/audit"
+	"github.com/simtabi/osaat/src/internal/collectors"
 )
 
 // Collector is the Linux implementation of collectors.Collector.

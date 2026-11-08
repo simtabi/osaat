@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/simtabi/osaat/internal/audit"
+	"github.com/simtabi/osaat/src/internal/audit"
 )
 
 // sampleRecords returns a small fixed set used by every reporter test.

@@ -9,7 +9,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/simtabi/osaat/internal/audit"
+	"github.com/simtabi/osaat/src/internal/audit"
 )
 
 // WriteBrewfile emits a Homebrew Brewfile covering records that are

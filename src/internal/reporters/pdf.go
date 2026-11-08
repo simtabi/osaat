@@ -11,8 +11,8 @@ import (
 
 	"github.com/go-pdf/fpdf"
 
-	"github.com/simtabi/osaat/internal/audit"
-	"github.com/simtabi/osaat/internal/version"
+	"github.com/simtabi/osaat/src/internal/audit"
+	"github.com/simtabi/osaat/src/internal/version"
 )
 
 // PDFReporter renders the inventory as a single-file PDF: title +

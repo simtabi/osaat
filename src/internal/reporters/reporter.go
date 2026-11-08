@@ -6,7 +6,7 @@ package reporters
 import (
 	"io"
 
-	"github.com/simtabi/osaat/internal/audit"
+	"github.com/simtabi/osaat/src/internal/audit"
 )
 
 // Reporter writes a record set in a given format.

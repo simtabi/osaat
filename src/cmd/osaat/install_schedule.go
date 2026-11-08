@@ -9,8 +9,8 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/simtabi/osaat/internal/paths"
-	"github.com/simtabi/osaat/internal/schedule"
+	"github.com/simtabi/osaat/src/internal/paths"
+	"github.com/simtabi/osaat/src/internal/schedule"
 )
 
 func newInstallScheduleCmd() *cobra.Command {

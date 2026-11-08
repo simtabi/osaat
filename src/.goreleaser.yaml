@@ -43,9 +43,9 @@ builds:
     mod_timestamp: "{{ .CommitTimestamp }}"
     ldflags:
       - -s -w
-      - -X github.com/simtabi/osaat/internal/version.Version={{ .Version }}
-      - -X github.com/simtabi/osaat/internal/version.Commit={{ .Commit }}
-      - -X github.com/simtabi/osaat/internal/version.Date={{ .CommitDate }}
+      - -X github.com/simtabi/osaat/src/internal/version.Version={{ .Version }}
+      - -X github.com/simtabi/osaat/src/internal/version.Commit={{ .Commit }}
+      - -X github.com/simtabi/osaat/src/internal/version.Date={{ .CommitDate }}
 
 # A single macOS universal binary (amd64 + arm64) alongside the per-arch ones.
 universal_binaries:

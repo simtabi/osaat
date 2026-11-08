@@ -8,8 +8,8 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/simtabi/osaat/internal/audit"
-	"github.com/simtabi/osaat/internal/collectors"
+	"github.com/simtabi/osaat/src/internal/audit"
+	"github.com/simtabi/osaat/src/internal/collectors"
 )
 
 // masLineRe matches a `mas list` line:

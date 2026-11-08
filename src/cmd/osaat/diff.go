@@ -6,7 +6,7 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/simtabi/osaat/internal/diff"
+	"github.com/simtabi/osaat/src/internal/diff"
 )
 
 func newDiffCmd() *cobra.Command {
