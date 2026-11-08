@@ -5,7 +5,8 @@ Implementation-level detail lives in
 [`.design/architecture.md`](../.design/architecture.md).
 
 `osaat` is structured as a thin CLI on top of a small set of cleanly
-separated packages:
+separated packages. The Go module lives in `src/`
+(`github.com/simtabi/osaat/src`); the paths below are relative to it.
 
 ```
 cmd/osaat        — Cobra entrypoint, flag parsing
@@ -19,7 +20,40 @@ internal/profiles  — TOML save/load
 internal/schedule  — launchd + systemd unit generators
 internal/secrets   — secrets.json schema + age encryption
 internal/version   — version string (set at build time)
+internal/release   — tests only: the build-layout, release and no-container guards
 ```
+
+## Repository layout
+
+Everything the Go toolchain reads is under `src/`; everything the repository
+presents stays at the root.
+
+```
+src/                 the module: go.mod, cmd/, internal/, .goreleaser.yaml,
+                     scripts/ (build-all.sh, install.sh, install.ps1,
+                     extract-changelog.sh)
+build/               targets.txt (tracked) and generated output, one folder per OS
+scripts/             bash-fallback.sh, the zero-dependency audit script
+docs/  README.md  CHANGELOG.md  Makefile  .github/
+```
+
+## Why the module is in `src/`
+
+Keeping the module in a subdirectory leaves the root to the files a reader
+looks for first, and is the layout every simtabi Go project shares. The cost is
+that every tool has to be pointed at `src/`: `go -C src …` in the Makefile,
+`src/go.mod` for `setup-go`, `working-directory: src` for golangci-lint,
+`builds[].dir: src` for GoReleaser, and a `src/vX.Y.Z` tag beside each
+`vX.Y.Z` so Go can resolve the module path.
+
+## Why `build/` has one folder per OS
+
+`make build` writes `build/<host-os>/osaat`; `make cross` writes every target
+in `build/targets.txt` to `build/<os>/osaat_<os>_<arch>[.exe]` (`macos`, never
+`darwin`) with one `build/checksums.txt` over `{os}/{file}` paths, so
+`cd build && shasum -a 256 -c checksums.txt` verifies the lot. `make dist` adds
+`build/archives/`. There is no `build/dist/`: GoReleaser writes to
+`.cache/goreleaser/`. `TestBuildLayout` fails on anything else in `build/`.
 
 ## Boundaries
 

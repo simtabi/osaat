@@ -10,13 +10,15 @@ The binary is `osaat`.
 
 osaat is built from source: binary releases are on hold, so there is no
 download, package-manager or `go install` channel to use. You need Go (the
-version `go.mod` names), `git` and `make`.
+version `src/go.mod` names), `git` and `make`.
 
 ```sh
 git clone https://github.com/simtabi/osaat ~/src/osaat
-make -C ~/src/osaat build      # -> ~/src/osaat/bin/osaat
-install -m 0755 ~/src/osaat/bin/osaat ~/.local/bin/osaat
+make -C ~/src/osaat install    # builds build/<os>/osaat, copies it to ~/.local/bin
 ```
+
+`make build` alone leaves the binary at `build/macos/osaat` (or `build/linux/`,
+`build/freebsd/`, `build/windows/osaat.exe`) for you to put on your `PATH`.
 
 Pinning a version, updating, building without `make`, and the binaries and
 Homebrew cask published for 0.1.1 (frozen, not updated) are in

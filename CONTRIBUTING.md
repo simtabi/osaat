@@ -19,12 +19,18 @@ cd osaat
 make test
 ```
 
+The Go module lives in `src/` (`github.com/simtabi/osaat/src`). Run Go from the
+root with `go -C src …` or through `make`; a bare `go test ./...` at the root
+finds no packages and passes. `make build` writes `build/<os>/osaat`, and
+`make cross` cross-compiles every target in `build/targets.txt` into
+`build/<os>/`.
+
 You need:
 
 - Go 1.25 or newer
 - `make`
 - `golangci-lint` for `make lint` (optional for development; required in CI)
-- `goreleaser` for `make snapshot` (optional)
+- `goreleaser` for `make snapshot` (optional; it builds into `.cache/goreleaser/` and publishes nothing)
 
 ## Coding conventions
 
