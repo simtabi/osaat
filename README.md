@@ -8,9 +8,19 @@ The binary is `osaat`.
 
 ## Install
 
-osaat is built from source: binary releases are on hold, so there is no
-download, package-manager or `go install` channel to use. You need Go (the
-version `src/go.mod` names), `git` and `make`.
+Download the binary for your platform from the
+[latest GitHub release](https://github.com/simtabi/osaat/releases/latest)
+(`osaat_<os>_<arch>`, e.g. `osaat_macos_universal`, `osaat_linux_amd64`), check
+it against the release's `checksums.txt`, and put it on your `PATH`:
+
+```sh
+shasum -a 256 -c checksums.txt --ignore-missing
+install -m 0755 osaat_macos_universal ~/.local/bin/osaat
+```
+
+The GitHub release is the only channel: there is no package-manager or
+`go install` path. Or build from source, with Go (the version `src/go.mod`
+names), `git` and `make`:
 
 ```sh
 git clone https://github.com/simtabi/osaat ~/src/osaat
@@ -20,8 +30,8 @@ make -C ~/src/osaat install    # builds build/<os>/osaat, copies it to ~/.local/
 `make build` alone leaves the binary at `build/macos/osaat` (or `build/linux/`,
 `build/freebsd/`, `build/windows/osaat.exe`) for you to put on your `PATH`.
 
-Pinning a version, updating, building without `make`, and the binaries and
-Homebrew cask published for 0.1.1 (frozen, not updated) are in
+Verifying the attestation, pinning a version, updating, building without
+`make`, and the Homebrew cask published for 0.1.1 (frozen, not updated) are in
 [docs/installation.md](docs/installation.md).
 
 **Zero-dep Bash fallback (macOS only):** for the cold-start case
@@ -116,7 +126,7 @@ End-user documentation for `osaat`. Project-internal design notes live in
 | [Installation](docs/installation.md) | How to build and install from source on macOS, Linux, BSD |
 | [Configuration](docs/configuration.md) | Config file format, environment variables, profiles |
 | [Architecture](docs/architecture.md) | What the tool does and how it does it, at a level useful for contributors |
-| [Release process](docs/release.md) | How a release is cut, and the confirmed dispatch that publishes binaries |
+| [Release process](docs/release.md) | How a release is cut: a pushed tag, or a request, publishes the binaries |
 | [Migration / shipping checklist](docs/shipping-checklist.md) | Step-by-step migration runbook |
 
 Per-command reference:

@@ -34,7 +34,9 @@ Then manually:
 # 1. Prerequisites
 xcode-select --install
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-brew install mas age simtabi/tap/osaat
+brew install mas age gh
+gh release download --repo simtabi/osaat --pattern osaat_macos_universal --pattern checksums.txt
+shasum -a 256 -c checksums.txt --ignore-missing && install -m 0755 osaat_macos_universal ~/.local/bin/osaat
 
 # 2. Restore the bundle
 mkdir -p ~/backup

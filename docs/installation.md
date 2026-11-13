@@ -1,11 +1,31 @@
 # Installation
 
+Two ways, in this order: download the binary from the GitHub release, or build
+from source. The GitHub release is the only channel: this page offers no
+package-manager or `go install` path.
+
+## Download a release
+
+Each [GitHub release](https://github.com/simtabi/osaat/releases) carries bare
+binaries `osaat_<os>_<arch>` (`.exe` on Windows; `macos`, not `darwin`), archives,
+Linux `.deb`/`.rpm`/`.apk` packages, and `checksums.txt`. Download the one for
+your platform and the checksums, verify, and put it on your `PATH`:
+
+```sh
+gh release download --repo simtabi/osaat --pattern 'osaat_macos_universal' --pattern checksums.txt
+shasum -a 256 -c checksums.txt --ignore-missing
+install -m 0755 osaat_macos_universal ~/.local/bin/osaat
+```
+
+Every asset in `checksums.txt` carries a build-provenance attestation:
+
+```sh
+gh attestation verify osaat_macos_universal --repo simtabi/osaat
+```
+
 ## Build from source
 
-osaat is built from source. Binary releases are on hold until the maintainer
-decides otherwise, so this page offers no download, package-manager or
-`go install` path. You need Go 1.25 or newer (the version `src/go.mod` names),
-`git` and `make`.
+You need Go 1.25 or newer (the version `src/go.mod` names), `git` and `make`.
 
 ```sh
 git clone https://github.com/simtabi/osaat ~/src/osaat
@@ -48,13 +68,12 @@ make -C ~/src/osaat install
 the tag or commit the binary was built from, and a build from a branch is still
 identifiable.
 
-### Earlier binary releases
+### Frozen channels
 
-0.1.1 was published with binaries and archives for macOS, Linux, Windows and
-FreeBSD, Linux `.deb`/`.rpm`/`.apk` packages, checksums with a build-provenance
-attestation, and a Homebrew cask in `simtabi/homebrew-tap`. Those stay where they
-are, and an existing install keeps working, but none of those channels is updated
-while releases are on hold: build from source to get anything newer.
+0.1.1 was also published as a Homebrew cask in `simtabi/homebrew-tap`. That cask
+stays where it is and an existing install keeps working, but it is frozen: no
+release updates it. Download from the GitHub release, or build from source, to
+get anything newer.
 
 ## Zero-dependency Bash fallback (macOS only)
 

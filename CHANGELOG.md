@@ -22,18 +22,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `src/scripts/build-all.sh` no longer deletes `build/` whole or rewrites the tracked
   `build/targets.txt`; it removes generated output only.
 
-- The release workflow no longer starts on a tag push. Binary releases are on hold, and a release
-  runs only when dispatched by hand on a `v[0-9]*` tag with `-f confirm=release-go`; a test fails
-  if an automatic trigger returns.
-- The README and installation guide build osaat from source only: no download, package-manager
-  or `go install` path is offered while binary releases are on hold. The 0.1.1 binaries and
-  Homebrew cask are described as frozen, not removed.
+- Binaries ship on the GitHub release only. A release builds on a pushed `vX.Y.Z` tag (or a
+  `vX.Y.Z-rc.N` pre-release), or on request for a tag already pushed
+  (`gh workflow run release.yml --repo simtabi/osaat -f tag=vX.Y.Z`). `release.yml` is now a thin
+  caller of simtabi/.github's shared `go-release.yml`, which checks the tag, takes the notes from
+  this file, mirrors `src/vX.Y.Z`, runs GoReleaser and attests provenance. This replaces the
+  dispatch-only, `-f confirm=release-go` workflow of this cycle, which never shipped.
+- The README and installation guide offer two paths, in order: download the binary from the GitHub
+  release and check it against `checksums.txt`, or build from source. No package-manager or
+  `go install` path is offered.
+
+### Removed
+
+- The Homebrew cask (`simtabi/homebrew-tap`), Scoop and Winget publishing from
+  `src/.goreleaser.yaml`, and the deploy keys, app token and `SKIP_SCOOP` / `SKIP_WINDOWS_PKGS`
+  switches that fed them. The 0.1.1 cask is frozen: it stays in the tap and keeps working, and no
+  release updates it.
 
 ### Added
 
 - Tests that fail if `build/` holds anything but OS folders, its inputs, `checksums.txt` and
   `archives/`; if a Dockerfile, compose file or image-publishing step appears; or if the docs offer
-  a `go install` path while releases are on hold.
+  a `go install` path.
+- Tests that fail if `release.yml` gains a branch push, schedule, pull-request or release trigger,
+  stops calling the shared release workflow, or switches off the `src/vX.Y.Z` alias, and if
+  `src/.goreleaser.yaml` gains any publishing block besides the GitHub release.
 
 ### Fixed
 
