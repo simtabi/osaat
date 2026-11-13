@@ -31,6 +31,12 @@ HOST_OS   := $(if $(filter darwin,$(HOST_GOOS)),macos,$(HOST_GOOS))
 EXE       := $(if $(filter windows,$(HOST_GOOS)),.exe,)
 BIN       := build/$(HOST_OS)/$(BINARY)$(EXE)
 
+# The fewest entries `make check-build` must inspect in build/: the files at its
+# root and in each OS folder. Each build passes what it just wrote (the host
+# build: targets.txt and the binary; cross: targets.txt, checksums.txt and one
+# binary per target), so a check reading an empty or wrong directory fails.
+BUILD_LAYOUT_MIN ?= 1
+
 .PHONY: help build build-local install test test-race lint vet fmt tidy cross dist check-build snapshot run clean
 
 help: ## Show this help
@@ -40,7 +46,7 @@ build: build-local ## Build build/<host-os>/osaat (the same as build-local)
 
 build-local: ## Build build/<host-os>/osaat with the host's Go toolchain
 	CGO_ENABLED=0 go -C src build -trimpath -ldflags '$(LDFLAGS)' -o ../$(BIN) $(CMD)
-	@$(MAKE) --no-print-directory check-build
+	@$(MAKE) --no-print-directory check-build BUILD_LAYOUT_MIN=2
 
 BINDIR ?= $(HOME)/.local/bin
 
@@ -70,14 +76,14 @@ lint: ## Run golangci-lint (must be installed)
 
 cross: ## Cross-compile every target in build/targets.txt into build/<os>/
 	ARCHIVES=0 VERSION=$(VERSION) COMMIT=$(COMMIT) DATE=$(DATE) ./src/scripts/build-all.sh
-	@$(MAKE) --no-print-directory check-build
+	@$(MAKE) --no-print-directory check-build BUILD_LAYOUT_MIN=$$(( $$(grep -cvE '^[[:space:]]*(#|$$)' build/targets.txt) + 2 ))
 
 dist: ## cross, plus .tar.gz/.zip archives in build/archives/ (publishes nothing)
 	ARCHIVES=1 VERSION=$(VERSION) COMMIT=$(COMMIT) DATE=$(DATE) ./src/scripts/build-all.sh
-	@$(MAKE) --no-print-directory check-build
+	@$(MAKE) --no-print-directory check-build BUILD_LAYOUT_MIN=$$(( $$(grep -cvE '^[[:space:]]*(#|$$)' build/targets.txt) + 2 ))
 
 check-build: ## Fail when build/ holds anything but the OS folders, inputs, checksums.txt and archives/
-	go -C src test ./internal/release -run 'TestBuildLayout$$' -count=1
+	BUILD_LAYOUT_MIN=$(BUILD_LAYOUT_MIN) go -C src test ./internal/release -run 'TestBuildLayout$$' -count=1
 
 snapshot: ## Build the release artifacts into .cache/goreleaser/ without publishing (requires goreleaser)
 	@command -v goreleaser >/dev/null 2>&1 || { echo "goreleaser not found — install from https://goreleaser.com"; exit 1; }
