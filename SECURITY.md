@@ -35,7 +35,8 @@ This policy covers the source code in this repository and the binaries
 distributed via:
 
 - GitHub Releases under `simtabi/osaat`
-- The `simtabi/homebrew-tap` Homebrew tap formula `osaat`
+- The `simtabi/homebrew-tap` Homebrew cask `osaat`, for the versions it
+  already holds (frozen since 2026-11-13: no release updates it)
 
 It does not cover:
 

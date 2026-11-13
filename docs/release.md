@@ -1,12 +1,18 @@
 # Release process
 
-How a tagged release is cut, what it publishes, and how the package
-managers are updated.
+How a tagged release is cut and what it publishes.
 
-Binary releases are on hold. A `vX.Y.Z` tag records a version and publishes
-nothing; binaries, packages and the Homebrew cask are built from it only when the
-release workflow is dispatched by hand with a confirmation (below). Until binary
-releases resume, users build from source ([installation](installation.md#build-from-source)).
+Binaries ship on the GitHub release only: no Homebrew, Scoop, Winget, `go install`,
+image or any other channel. A release builds in one of two ways:
+
+```sh
+git push origin vX.Y.Z                                            # builds and publishes vX.Y.Z
+gh workflow run release.yml --repo simtabi/osaat -f tag=vX.Y.Z    # the same, for a tag already pushed
+```
+
+Because a pushed `vX.Y.Z` tag publishes, push one only for final code. A tag is
+final: it is never moved, deleted or reused. Test builds use `vX.Y.Z-rc.N`, which
+publishes a GitHub pre-release.
 
 ## Versioning
 
@@ -23,26 +29,29 @@ breaking changes; patch releases are bug fixes only.
    section above it.
 3. Update the compare link at the bottom of `CHANGELOG.md`.
 4. Land the roll through a pull request; never push to `main`.
-5. Tag the merge commit on `main` and push the tag:
-   `git tag -a vX.Y.Z -m "Release vX.Y.Z" && git push origin vX.Y.Z`.
-   Pushing a tag publishes nothing: binary releases are on hold, and osaat is
-   built from source until the owner decides otherwise.
-6. Only when a binary release has been approved for this version, dispatch the
-   release workflow on the tag:
+5. Tag the merge commit on `main` and push the tag. The push builds and
+   publishes the release:
 
    ```sh
-   gh workflow run release.yml --repo simtabi/osaat --ref vX.Y.Z -f confirm=release-go
+   git -C ~/src/osaat tag -a vX.Y.Z -m "Release vX.Y.Z"
+   git -C ~/src/osaat push origin vX.Y.Z
    ```
 
-   `vX.Y.Z` must be a tag already on GitHub. The command publishes for real, so
-   run it only for a version the owner approved. The workflow's first step
-   refuses to run without `confirm=release-go`, or on anything but a `v[0-9]*`
-   tag, before a single artifact is built.
+6. To build a release for a tag that is already on GitHub (a first release of
+   an older tag, or a re-run after a failed one), request it instead:
+
+   ```sh
+   gh workflow run release.yml --repo simtabi/osaat -f tag=vX.Y.Z
+   ```
+
+   The workflow refuses anything that is not a `vX.Y.Z` (or `vX.Y.Z-pre`) tag
+   already on GitHub, and a final version with no `## [X.Y.Z]` section in
+   `CHANGELOG.md`, before a single artifact is built.
 
 The Go module lives in `src/` (`github.com/simtabi/osaat/src`), and Go resolves
 a module in a subdirectory only through a tag carrying that prefix, so a release
 needs `src/vX.Y.Z` on the same commit as `vX.Y.Z`. The release workflow creates
-it before GoReleaser runs; never push it by hand, and never move it once it
+it before GoReleaser runs (it matches no release trigger, so it starts no second run); never push it by hand, and never move it once it
 exists.
 
 Local builds never touch release assets: `make cross` writes
@@ -50,10 +59,12 @@ Local builds never touch release assets: `make cross` writes
 `build/archives/`, and GoReleaser writes its own scratch output to
 `.cache/goreleaser/`. None of them publishes.
 
-The release workflow (`.github/workflows/release.yml`) runs only on that
-confirmed dispatch, never on a tag push, and runs GoReleaser
-(`--config src/.goreleaser.yaml`, from the repository root) against the tag it
-was dispatched on. It publishes, from that one tag:
+The release workflow (`.github/workflows/release.yml`) is a thin caller of the
+shared `simtabi/.github` `go-release.yml`, pinned to a commit. It runs on those
+two triggers only, never on a branch push, and runs GoReleaser
+(`--config src/.goreleaser.yaml`, from the repository root) against the tag. It
+refuses a GoReleaser config holding any other publishing block. It publishes,
+on the GitHub release for that one tag:
 
 - Bare binaries `osaat_<os>_<arch>` and archives `osaat_<os>_<arch>.tar.gz`
   (`.zip` on Windows) for macOS (amd64, arm64, universal), Linux (amd64,
@@ -65,29 +76,30 @@ was dispatched on. It publishes, from that one tag:
 - `checksums.txt` (SHA-256, bare file names) over every asset.
 - A signed build-provenance attestation for every asset in `checksums.txt`.
 - The GitHub Release, whose body is the tagged version's `CHANGELOG.md`
-  section (`src/scripts/extract-changelog.sh`).
-- An update to `Casks/osaat.rb` in `simtabi/homebrew-tap`. With the deploy
-  key it is pushed straight to `main` (deploy keys are the tap ruleset's one
-  bypass actor), so `brew install simtabi/tap/osaat` serves the new version at
-  once. Without the key it falls back to a pull request, served once merged.
+  section, followed by a link to the full changelog. The shared workflow reads
+  it back after publishing and fails if the body is shorter than the section.
+  `src/scripts/extract-changelog.sh` prints the same section locally.
 
-Scoop and Winget manifests are built but not published by default. Scoop publishes when the
-repository variable `SKIP_SCOOP` is `false` (unset, it follows `SKIP_WINDOWS_PKGS`); Winget publishes
-when `SKIP_WINDOWS_PKGS` is `false` and also needs a `simtabi/winget-pkgs` fork.
+## Frozen channels
+
+Until 2026-11-13 a release also updated `Casks/osaat.rb` in
+`simtabi/homebrew-tap`, and built Scoop and Winget manifests behind the
+`SKIP_SCOOP` / `SKIP_WINDOWS_PKGS` variables. Those channels are frozen: the
+0.1.1 cask stays in the tap and keeps working, but no release updates it, and no
+Scoop or Winget manifest is published. The GoReleaser blocks that wrote them are
+gone, and `TestGoReleaserPublishesNowhereElse` fails if one comes back.
 
 ## Credentials
 
-The tap and bucket are written with the write deploy keys `HOMEBREW_TAP_DEPLOY_KEY` (on `simtabi/homebrew-tap`) and `SCOOP_BUCKET_DEPLOY_KEY` (on `simtabi/scoop-bucket`), each a repository secret that reaches its one repository and nothing else. While
-both are set, no app token is minted. Without them, the workflow falls back to a
-per-run Refresh Bot token limited to those two repositories (contents and pull
-request write), from `REFRESH_APP_CLIENT_ID` and `REFRESH_APP_PRIVATE_KEY`. The
-release itself uses `GITHUB_TOKEN`.
+None beyond the run's own `GITHUB_TOKEN`, which creates the release, uploads
+the assets and pushes `src/vX.Y.Z`. The tap and bucket deploy keys
+(`HOMEBREW_TAP_DEPLOY_KEY`, `SCOOP_BUCKET_DEPLOY_KEY`) and the Refresh Bot token
+are no longer read by this repository's release.
 
 ## Trusted publishing (PyPI / npm / etc.)
 
-Not applicable — `osaat` is a Go binary, built from source while binary
-releases are on hold, and otherwise distributed via GitHub Releases and the
-Homebrew tap. No package-registry publishing keys are needed.
+Not applicable — `osaat` is a Go binary distributed on GitHub Releases only.
+No package-registry publishing keys are needed.
 
 ## Rollback
 
