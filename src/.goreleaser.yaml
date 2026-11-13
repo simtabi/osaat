@@ -121,8 +121,8 @@ snapshot:
   version_template: "{{ .Version }}-snapshot+{{ .ShortCommit }}"
 
 # The GitHub release is the only channel (owner, 2026-11-13): no homebrew_casks, scoops, winget
-# or any other publishing block. The simtabi/homebrew-tap cask and simtabi/scoop-bucket manifest
-# published for earlier versions are frozen: no longer updated, still there. simtabi/.github's
+# or any other publishing block. The simtabi/homebrew-tap cask published for 0.1.1 is frozen:
+# no longer updated, still there. No Scoop or Winget manifest was ever published. simtabi/.github's
 # go-release.yml refuses this config if one of those blocks comes back, and
 # src/internal/release's TestGoReleaserPublishesNowhereElse fails first.
 
