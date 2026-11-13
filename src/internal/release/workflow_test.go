@@ -42,28 +42,56 @@ func readFile(t *testing.T, parts ...string) string {
 	return string(raw)
 }
 
-// The trigger guard itself is src/cmd/osaat's TestReleaseRunsOnlyOnAConfirmedDispatch.
-// This one adds the order: the refusal must be the first step, before anything
-// is checked out, built or published.
-func TestReleaseRefusesFirst(t *testing.T) {
-	wf := readFile(t, repoRoot(t), ".github", "workflows", "release.yml")
-	_, steps, ok := strings.Cut(wf, "steps:")
-	if !ok {
-		t.Fatal("release.yml has no steps")
+// The trigger guard itself is src/cmd/osaat's TestReleaseRunsOnAVersionTagOrOnRequest. This one
+// pins what the caller hands the shared simtabi/.github go-release.yml: the module is
+// github.com/simtabi/osaat/src, which Go resolves only through a src/vX.Y.Z tag, so the caller must
+// not switch off the alias the shared workflow mirrors (module-alias-prefix, default src/), nor point
+// it at another GoReleaser config or Go version file than the ones this repository keeps.
+func TestReleaseKeepsTheModuleAliasTag(t *testing.T) {
+	root := repoRoot(t)
+	wf := readFile(t, root, ".github", "workflows", "release.yml")
+	if !strings.Contains(wf, "uses: simtabi/.github/.github/workflows/go-release.yml@") {
+		t.Fatal("release.yml does not call the shared go-release.yml; this guard reads its inputs")
 	}
-	first := steps
-	if items := regexp.MustCompile(`(?m)^\s*- `).FindAllStringIndex(steps, 2); len(items) == 2 {
-		first = steps[:items[1][0]]
-	}
-	for _, want := range []string{`"release-go"`, "refs/tags/v[0-9]*", "exit 1"} {
-		if !strings.Contains(first, want) {
-			t.Errorf("the first release step must refuse without confirm=release-go on a vX.Y.Z tag; it lacks %q:\n%s", want, first)
+	for input, want := range map[string]string{
+		"module-alias-prefix": "src/",
+		"goreleaser-config":   "src/.goreleaser.yaml",
+		"go-version-file":     "src/go.mod",
+		"changelog":           "CHANGELOG.md",
+	} {
+		m := regexp.MustCompile(`(?m)^\s+` + input + `:\s*['"]?([^'"\s#]*)`).FindStringSubmatch(wf)
+		if m != nil && m[1] != want {
+			t.Errorf("release.yml sets %s to %q; this repository needs the shared default %q", input, m[1], want)
 		}
 	}
-	// The module is github.com/simtabi/osaat/src, which Go resolves only
-	// through a src/vX.Y.Z tag, so the release has to create it.
-	if !strings.Contains(wf, `alias_tag="src/${GITHUB_REF_NAME}"`) {
-		t.Error("release.yml does not mirror the src/vX.Y.Z tag Go resolves the module through")
+	for _, f := range []string{"src/.goreleaser.yaml", "src/go.mod", "CHANGELOG.md"} {
+		if _, err := os.Stat(filepath.Join(root, filepath.FromSlash(f))); err != nil {
+			t.Errorf("the shared release workflow reads %s, which is missing: %v", f, err)
+		}
+	}
+}
+
+// otherChannels are the GoReleaser blocks that publish somewhere other than the GitHub release:
+// package managers, images and arbitrary publishers (~/.claude/rules/go.md, owner, 2026-11-13).
+// nfpms stays: it builds the .deb/.rpm/.apk files that ship as release assets.
+var otherChannels = []string{
+	"brews", "homebrew_casks", "scoops", "winget", "chocolateys", "aurs", "aur_sources",
+	"snapcrafts", "flatpaks", "nix", "dockers", "dockers_v2", "docker_manifests", "docker_signs",
+	"kos", "krews", "npms", "cloudsmiths", "furies", "publishers", "blobs", "uploads", "artifactories",
+}
+
+// The GitHub release is the only channel. The Homebrew cask, Scoop manifest and Winget manifest
+// this config published until 2026-11-13 are gone from it and must not come back; the shared
+// workflow refuses such a config at release time, and this fails first, on the pull request.
+func TestGoReleaserPublishesNowhereElse(t *testing.T) {
+	cfg := readFile(t, repoRoot(t), "src", ".goreleaser.yaml")
+	if !regexp.MustCompile(`(?m)^release:`).MatchString(cfg) {
+		t.Fatal("src/.goreleaser.yaml has no release block; the GitHub release is the channel")
+	}
+	for _, k := range otherChannels {
+		if regexp.MustCompile(`(?m)^` + k + `:`).MatchString(cfg) {
+			t.Errorf("src/.goreleaser.yaml publishes through %q; binaries go to the GitHub release only", k)
+		}
 	}
 }
 
@@ -236,9 +264,9 @@ func TestNoContainerImage(t *testing.T) {
 	}
 }
 
-// Releases are on hold, so the docs offer building from source only: no
-// `go install` of this module, which would also serve whatever the Go proxy
-// cached for a tag rather than the code in the checkout.
+// Binaries ship on the GitHub release only, so the docs offer the release
+// download or a build from source: no `go install` of this module, which would
+// serve whatever the Go proxy cached for a tag rather than the released code.
 func TestDocsOfferNoGoInstall(t *testing.T) {
 	root := repoRoot(t)
 	files := []string{filepath.Join(root, "README.md"), filepath.Join(root, "CONTRIBUTING.md")}
@@ -257,7 +285,7 @@ func TestDocsOfferNoGoInstall(t *testing.T) {
 	for _, f := range files {
 		if m := goInstall.FindString(readFile(t, f)); m != "" {
 			rel, _ := filepath.Rel(root, f)
-			t.Errorf("%s offers %q; while releases are on hold the docs build from source", rel, m)
+			t.Errorf("%s offers %q; the docs offer the GitHub release or a build from source", rel, m)
 		}
 	}
 }
