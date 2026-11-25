@@ -93,7 +93,7 @@ nfpms:
     package_name: osaat
     vendor: Simtabi LLC
     homepage: "https://opensource.simtabi.com/products/simtabi/osaat"
-    maintainer: "Imani Manyara <imani@simtabi.com>"
+    maintainer: "Imani Manyara <opensource@simtabi.com>"
     description: "Audit and back up installed applications on macOS, Linux, and Unix."
     license: MIT
     formats: [deb, rpm, apk]
